@@ -13,6 +13,12 @@
 ;; Initialize package sources
 (require 'package)
 
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(defconst filip-savefile-dir (expand-file-name "savefile" user-emacs-directory))
+(unless (file-exists-p filip-savefile-dir)
+  (make-directory filip-savefile-dir))
+
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
@@ -164,13 +170,225 @@
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
+
+(use-package mode-icons)
+
+(use-package paren
+  :config
+  (show-paren-mode +1))
+
+(use-package elec-pair
+  :config
+  (electric-pair-mode +1))
+
+(use-package dictionary
+  :bind (("C-c l" . dictionary-lookup-definition))
+  :config
+  (setq dictionary-server "dict.org"))
+
+(use-package hl-line
+  :config
+  (global-hl-line-mode +1))
+
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+
+(use-package paredit
+  :config
+  (add-hook 'emacs-lisp-mode-hook #'paredit-mode)
+  ;; enable in the *scratch* buffer
+  (add-hook 'lisp-interaction-mode-hook #'paredit-mode)
+  (add-hook 'ielm-mode-hook #'paredit-mode)
+  (add-hook 'lisp-mode-hook #'paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'paredit-mode))
+
+(use-package exec-path-from-shell
+  :config
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize)))
+
+(use-package move-text
+  :bind
+  (([(meta shift up)] . move-text-up)
+   ([(meta shift down)] . move-text-down)))
+
+(use-package clojure-mode
+  :config
+  ;; teach clojure-mode about some macros that I use on projects like
+  ;; nREPL and Orchard
+  (define-clojure-indent
+    (returning 1)
+    (testing-dynamic 1)
+    (testing-print 1))
+
+  (add-hook 'clojure-mode-hook #'paredit-mode)
+  (add-hook 'clojure-mode-hook #'subword-mode)
+  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+
+(use-package inf-ruby
+  :config
+  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
+
+(use-package ruby-mode
+  :config
+  (setq ruby-insert-encoding-magic-comment nil)
+  (add-hook 'ruby-mode-hook #'subword-mode))
+
+(use-package inf-clojure
+  :config
+  (add-hook 'inf-clojure-mode-hook #'paredit-mode)
+  (add-hook 'inf-clojure-mode-hook #'rainbow-delimiters-mode))
+
+(use-package cider
+  :config
+  (setq nrepl-log-messages t)
+  (add-hook 'cider-repl-mode-hook #'paredit-mode)
+  (add-hook 'cider-repl-mode-hook #'rainbow-delimiters-mode))
+
+(use-package flycheck-joker)
+
+(use-package haskell-mode
+  :config
+  (add-hook 'haskell-mode-hook #'subword-mode)
+  (add-hook 'haskell-mode-hook #'interactive-haskell-mode)
+  (add-hook 'haskell-mode-hook #'haskell-doc-mode))
+
+(use-package rust-mode)
+
+;;;; OCaml support
+
+(use-package tuareg
+  :ensure t
+  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+(use-package dune
+  :ensure t)
+;; Merlin configuration
+(use-package merlin
+  :ensure t
+  :config
+  (add-hook 'tuareg-mode-hook #'merlin-mode)
+  ;; (add-hook 'merlin-mode-hook #'company-mode)
+  ;; we're using flycheck instead
+  (setq merlin-error-after-save nil))
+
+(use-package merlin-eldoc
+  :ensure t
+  :hook ((tuareg-mode) . merlin-eldoc-setup))
+
+;; This uses Merlin internally
+(use-package flycheck-ocaml
+  :ensure t
+  :config
+  (flycheck-ocaml-setup))
+
+;; utop configuration
+(use-package utop
+  :ensure t
+  :config
+  (add-hook 'tuareg-mode-hook #'utop-minor-mode))
+
+;;;; Markup languages support
+
+(use-package web-mode
+  :ensure t
+  :mode (("\\.html?\\'" . web-mode)
+         ("\\.erb\\'" . web-mode)
+         ("\\.hbs\\'" . web-mode))
+  :custom
+  (web-mode-markup-indent-offset 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2))
+
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\.md\\'" . gfm-mode)
+         ("\\.markdown\\'" . gfm-mode))
+  :config
+  (setq markdown-fontify-code-blocks-natively t)
+  :preface
+  (defun jekyll-insert-image-url ()
+    (interactive)
+    (let* ((files (directory-files "../assets/images"))
+           (selected-file (completing-read "Select image: " files nil t)))
+      (insert (format "![%s](/assets/images/%s)" selected-file selected-file))))
+
+  (defun jekyll-insert-post-url ()
+    (interactive)
+    (let* ((project-root (projectile-project-root))
+           (posts-dir (expand-file-name "_posts" project-root))
+           (default-directory posts-dir))
+      (let* ((files (remove "." (mapcar #'file-name-sans-extension (directory-files "."))))
+             (selected-file (completing-read "Select article: " files nil t)))
+        (insert (format "{%% post_url %s %%}" selected-file))))))
+
+(use-package yaml-mode)
+
+(use-package marginalia
+  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
+(use-package nerd-icons-completion
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+(use-package super-save
+  :config
+  ;; add integration with ace-window
+  (add-to-list 'super-save-triggers 'ace-window)
+  (super-save-mode +1))
+
+(use-package recentf
+  :config
+  (setq recentf-save-file (expand-file-name "recentf" filip-savefile-dir)
+        recentf-max-saved-items 500
+        recentf-max-menu-items 15
+        ;; disable recentf-cleanup on Emacs start, because it can cause
+        ;; problems with remote files
+        recentf-auto-cleanup 'never)
+  (recentf-mode +1))
+
+(use-package desktop
+   :config
+   (desktop-save-mode +1))
+
+(use-package yascroll
+  :init
+  ;; https://github.com/m2ym/yascroll-el/pull/17
+  (defcustom yascroll:enabled-window-systems
+    '(nil x w32 ns pc mac)
+    "A list of `window-system's where yascroll can work."
+    :type '(repeat (choice (const :tag "Termcap" nil)
+                           (const :tag "X window" x)
+                           (const :tag "MS-Windows" w32)
+                           (const :tag "Macintosh Cocoa" ns)
+                           (const :tag "Macintosh Emacs Port" mac)
+                           (const :tag "MS-DOS" pc)))
+    :group 'yascroll)
+  :config
+  (set-face-background 'yascroll:thumb-fringe "#666")
+  (set-face-foreground 'yascroll:thumb-fringe "#666")
+  (global-yascroll-bar-mode 1))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
+   '(yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
