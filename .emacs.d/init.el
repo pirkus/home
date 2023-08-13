@@ -76,9 +76,25 @@
 (use-package doom-themes
   :init (load-theme 'doom-palenight t))
 
+;; (use-package doom-modeline
+  ;; :init (doom-modeline-mode 1)
+  ;; :custom ((doom-modeline-height 15)))
+
 (use-package doom-modeline
+  :ensure t
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+  :config
+  (setq doom-modeline-icon (display-graphic-p)
+	doom-modeline-buffer-encoding nil
+	doom-modeline-enable-word-count t
+	doom-modeline-height 15)
+  (use-package nyan-mode
+    :ensure t
+    :hook (doom-modeline-mode . nyan-mode)
+    :config
+    (setq nyan-animate-nyancat t
+	  nyan-wavy-trail t
+	  nyan-bar-length 64)))
 
 (use-package which-key
   :defer 0
@@ -206,8 +222,7 @@
 
 (use-package exec-path-from-shell
   :config
-  (when (memq window-system '(mac ns))
-    (exec-path-from-shell-initialize)))
+  (exec-path-from-shell-initialize))
 
 (use-package move-text
   :bind
@@ -364,31 +379,13 @@
    :config
    (desktop-save-mode +1))
 
-(use-package yascroll
-  :init
-  ;; https://github.com/m2ym/yascroll-el/pull/17
-  (defcustom yascroll:enabled-window-systems
-    '(nil x w32 ns pc mac)
-    "A list of `window-system's where yascroll can work."
-    :type '(repeat (choice (const :tag "Termcap" nil)
-                           (const :tag "X window" x)
-                           (const :tag "MS-Windows" w32)
-                           (const :tag "Macintosh Cocoa" ns)
-                           (const :tag "Macintosh Emacs Port" mac)
-                           (const :tag "MS-DOS" pc)))
-    :group 'yascroll)
-  :config
-  (set-face-background 'yascroll:thumb-fringe "#666")
-  (set-face-foreground 'yascroll:thumb-fringe "#666")
-  (global-yascroll-bar-mode 1))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
+   '(nyan-mode yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
