@@ -17,7 +17,7 @@ pacman -Sy archlinux-keyring
 
 ## After arch is installed
 ```
-sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python
+sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip
 ```
 
 ## Change shell
