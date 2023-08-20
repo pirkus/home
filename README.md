@@ -5,39 +5,41 @@ configs and dot files
 Turn on PXE network in BIOS
 
 Kernel params needed
-```
+```shell
 nomodeset nvd_load=YES nvme_load=YES nvme_core.default_ps_max_latency_us=0
 ```
 
 ## To install arch
 If pacman is crapping itself try:
+```shell
 pacman-key --populate archlinux
-
+```
+```shell
 pacman -Sy archlinux-keyring
-
+```
 ## After arch is installed
 ```
 sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip noto-fonts noto-fonts-emoji alsa-utils
 ```
 
 ## Change shell
-```
+```shell
 chsh -s /bin/zsh
 ```
 
 ## Enable ly
-```
+```shell
 sudo systemctl enable ly.service
 ```
 
 ## Enable high resolution shell
-```
+```shell
 su -
 ```
 add "console-mode max" to /boot/loader/loader.conf
 
 this should work too (not tried yet) - !!! MUST BE SUDO!!!!
-```
+```shell
 echo "console-mode max" >> /boot/loader/loader.conf
 ```
 
@@ -45,12 +47,12 @@ echo "console-mode max" >> /boot/loader/loader.conf
 edit "/etc/systemd/system.conf"
 
 uncoment: DefaultTimeoutStopSec and set it to 5 or (not tried yet):
-```
+```shell
 echo "DefaultTimeoutStopSec=5" >> /etc/systemd/system.conf
 ```
 
 ## /etc/pacman.conf
-```
+```apacheconf
 [options]
 # The following paths are commented out with their default values listed.
 # If you wish to use different paths, uncomment and update the paths.
@@ -77,7 +79,7 @@ Architecture = auto
 # Misc options
 #UseSyslog
 Color
-TotalDownload
+#TotalDownload
 CheckSpace
 VerbosePkgLists
 ILoveCandy
