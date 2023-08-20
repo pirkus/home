@@ -479,6 +479,7 @@ strip_workspace_numbers yes
 # Xrandr
 exec xrandr --output DP-0 --mode 3440x1440 -r 144.00
 exec xmodmap ~/.Xmodmap
+exec xset r rate 200 20
 
 #####################################
 # Application menu handled by rofi: #
