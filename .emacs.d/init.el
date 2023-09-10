@@ -86,20 +86,28 @@
   ;; :custom ((doom-modeline-height 15)))
 
 (use-package doom-modeline
-  :ensure t
   :init (doom-modeline-mode 1)
+  :hook (after-init . doom-modeline-mode)
+  :custom
+  ;; Don't compact font caches during GC. Windows Laggy Issue
+  (inhibit-compacting-font-caches t)
   :config
-  (setq doom-modeline-icon (display-graphic-p)
-	doom-modeline-buffer-encoding nil
-	doom-modeline-enable-word-count t
-	doom-modeline-height 15)
-  (use-package nyan-mode
-    :ensure t
-    :hook (doom-modeline-mode . nyan-mode)
-    :config
-    (setq nyan-animate-nyancat t
-	  nyan-wavy-trail t
-	  nyan-bar-length 64)))
+  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+  (setq doom-modeline-height 18)
+  (setq doom-modeline-highlight-modified-buffer-name t)
+  (setq doom-modeline-icon (display-graphic-p))
+  (setq doom-modeline-major-mode-color-icon t)
+  (setq doom-modeline-minor-modes nil)
+  (setq doom-modeline-project-detection 'auto) ;auto/project
+  (setq doom-modeline-window-width-limit 85)
+  (setq find-file-visit-truename t))
+
+(use-package nyan-mode
+  :hook (doom-modeline-mode . nyan-mode)
+  :config
+  (setq nyan-animate-nyancat t
+        nyan-wavy-trail t)
+  (nyan-mode))
 
 (use-package which-key
   :defer 0
