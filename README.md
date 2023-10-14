@@ -117,3 +117,9 @@ Include = /etc/pacman.d/mirrorlist
 [multilib]
 Include = /etc/pacman.d/mirrorlist
 ```
+
+## VPN
+Move conf files to /etc/wireguard/some-conf.conf
+```shell
+wg-quick up some-conf
+```
