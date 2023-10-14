@@ -22,6 +22,13 @@ pacman -Sy archlinux-keyring
 sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip noto-fonts noto-fonts-emoji alsa-utils xorg-xmodmap scrot vk3d lib32-vk3d lib32-gamemode gamemode vulkan-tools
 ```
 
+## Checkout home from git
+```shell
+git init .
+git remote add -t \* -f origin <repository-url>
+git checkout master
+```
+
 ## Change shell
 ```shell
 chsh -s /bin/zsh
