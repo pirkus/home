@@ -123,3 +123,10 @@ Move conf files to /etc/wireguard/some-conf.conf
 ```shell
 wg-quick up some-conf
 ```
+## Public wifi (well if you need DNS)
+```shell
+sudo systemctl mask NetworkManager.service
+sudo systemctl mask wpa_supplicant.service
+sudo systemctl stop NetworkManager.service
+sudo systemctl stop wpa_supplicant.service
+```
