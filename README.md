@@ -130,3 +130,22 @@ sudo systemctl mask wpa_supplicant.service
 sudo systemctl stop NetworkManager.service
 sudo systemctl stop wpa_supplicant.service
 ```
+
+## Yubikey login
+```shell
+sudo pacman -Syu pam-u2f
+```
+Add yubikey to a mapping file:
+```shell
+pamu2fcfg | sudo tee -a /etc/u2f_mappings
+
+# (At this point, press the button. You should see a long string of numbers.
+# If you don't, make sure you have `udev` setup correctly.)
+
+sudo -i
+echo >> /etc/u2f_mappings
+```
+Append to your display manager's of choice pam.d file in `/etc/pam.d` (ly in our case):
+```shell
+sudo echo "auth sufficient pam_u2f.so authfile=/etc/u2f_mappings cue" >>
+```
