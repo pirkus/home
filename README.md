@@ -145,7 +145,7 @@ pamu2fcfg | sudo tee -a /etc/u2f_mappings
 sudo -i
 echo >> /etc/u2f_mappings
 ```
-Append to your display manager's of choice pam.d file in `/etc/pam.d` (ly in our case):
+Append to your display manager's of choice pam.d file in `/etc/pam.d` (ly & sudo in our case):
 ```shell
 sudo echo "auth sufficient pam_u2f.so authfile=/etc/u2f_mappings cue" >>
 ```
