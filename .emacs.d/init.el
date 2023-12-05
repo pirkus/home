@@ -392,6 +392,15 @@
    :config
    (desktop-save-mode +1))
 
+(use-package kotlin-mode
+  :after (lsp-mode dap-mode)
+  :config
+  (require 'dap-kotlin)
+  ;; should probably have been in dap-kotlin instead of lsp-kotlin
+  (setq lsp-kotlin-debug-adapter-path (or (executable-find "kotlin-debug-adapter") "~/dev/kotlin-dap/bin/kotlin-debug-adapter"))
+  :hook
+  (kotlin-mode . lsp))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
