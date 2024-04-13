@@ -120,19 +120,36 @@
 
 (defun efs/lsp-mode-setup ()
   (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (add-hook 'rust-mode-hook #'lsp)
   (lsp-headerline-breadcrumb-mode))
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :hook (lsp-mode . efs/lsp-mode-setup)
+  :custom
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  ;; enable / disable the hints as you prefer:
+  (lsp-inlay-hint-enable t)
+  ;; These are optional configurations. See https://emacs-lsp.github.io/lsp-mode/page/lsp-rust-analyzer/#lsp-rust-analyzer-display-chaining-hints for a full list
+  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+  (lsp-rust-analyzer-display-chaining-hints t)
+  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names t)
+  (lsp-rust-analyzer-display-closure-return-type-hints nil)
+  (lsp-rust-analyzer-display-parameter-hints nil)
+  (lsp-rust-analyzer-display-reborrow-hints t)
   :init
   (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
   :config
-  (lsp-enable-which-key-integration t))
+  (lsp-enable-which-key-integration t)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-treemacs
@@ -283,7 +300,35 @@
   (add-hook 'haskell-mode-hook #'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook #'haskell-doc-mode))
 
-(use-package rust-mode)
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun rk/rustic-mode-hook ()
+  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
+  ;; save rust buffers that are not file visiting. Once
+  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
+  ;; no longer be necessary.
+  (when buffer-file-name
+    (setq-local buffer-save-without-query t))
+  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
 
 ;;;; OCaml support
 
@@ -407,7 +452,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(nyan-mode yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
+   '(kotlin-mode rustic hydra nyan-mode yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired dired-single rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
