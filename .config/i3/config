@@ -289,9 +289,6 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 #exec --no-startup-id dex -a -s /etc/xdg/autostart/:~/.config/autostart/
 exec --no-startup-id dex --autostart --environment i3
 
-# start welcome app
-#exec --no-startup-id sh /usr/share/endeavouros/scripts/welcome --startdelay=3 
-
 # num lock activated
 #exec --no-startup-id numlockx on
 
@@ -323,6 +320,7 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # xscreensaver
 # https://www.jwz.org/xscreensaver
 #exec --no-startup-id xscreensaver --no-splash
+exec --no-startup-id xautolock -time 5 -locker i3lock
 
 # Desktop notifications
 # dunst config used ~/.config/dunst/dunstrc
@@ -331,8 +329,6 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # may yneed to run dbus-launch explicitly: 
 #exec --no-startup-id dbus-launch dunst
 exec --no-startup-id dunst
-# alternative if you installed aside with XFCE4:
-# exec --no-startup-id /usr/lib/xfce4/notifyd/xfce4-notifyd &
 
 # autotiling script
 # https://github.com/nwg-piotr/autotiling
