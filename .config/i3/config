@@ -149,8 +149,8 @@ bindsym F1 exec ~/.config/i3/scripts/keyhint-2
 # bindsym $mod+F1 exec xed ~/.config/i3/keybindings
 
 # Backlight control
-bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
-bindsym XF86MonBrightnessDown exec xbacklight -10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 
 # change focus
 bindsym $mod+j focus left
@@ -473,7 +473,7 @@ strip_workspace_numbers yes
 #}
 
 # Xrandr
-exec xrandr --output DP-0 --mode 3440x1440 -r 144.00
+exec xrandr --output eDP-1 --mode 2560x1600 -r 240.00
 exec xmodmap ~/.Xmodmap
 exec xset r rate 200 20
 
