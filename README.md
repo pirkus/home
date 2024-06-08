@@ -78,6 +78,10 @@ Section "InputClass"
 EndSection
 ```
 
+## Allow nvidia GPUs to sleep
+```shell
+sudo systemctl enable nvidia-persistenced.service
+```
 
 ## /etc/pacman.conf
 ```apacheconf
