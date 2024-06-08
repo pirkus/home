@@ -66,6 +66,19 @@ uncoment: DefaultTimeoutStopSec and set it to 5 or (not tried yet):
 echo "DefaultTimeoutStopSec=5" >> /etc/systemd/system.conf
 ```
 
+## Enable tap to click on touchpad
+Save file to "/etc/X11/xorg.conf.d/30-touchpad.conf"
+```
+Section "InputClass"
+    Identifier "touchpad"
+    Driver "libinput"
+    MatchIsTouchpad "on"
+    Option "Tapping" "on"
+    Option "TappingButtonMap" "lmr"
+EndSection
+```
+
+
 ## /etc/pacman.conf
 ```apacheconf
 [options]
