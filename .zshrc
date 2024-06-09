@@ -10,10 +10,4 @@ zstyle :compinstall filename '/home/filken/.zshrc'
 autoload -Uz compinit
 compinit
 
-export GEM_HOME="$(gem env user_gemhome)"
-export PATH="$PATH:$GEM_HOME/bin"
-
-# End of lines added by compinstall
-eval "$(starship init zsh)"
-
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
