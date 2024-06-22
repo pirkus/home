@@ -10,7 +10,4 @@ zstyle :compinstall filename '/home/filken/.zshrc'
 autoload -Uz compinit
 compinit
 
-# End of lines added by compinstall
-#eval "$(starship init zsh)"
-
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh

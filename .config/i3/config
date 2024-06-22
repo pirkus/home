@@ -69,16 +69,16 @@ bindsym $mod+Shift+9    move container to workspace  $ws9
 bindsym $mod+Shift+0    move container to workspace  $ws10
 
 # move focused container to workspace with numpad keys
-bindcode $mod+Shift+Mod2+87 	move container to workspace  $ws1
-bindcode $mod+Shift+Mod2+88 	move container to workspace  $ws2
-bindcode $mod+Shift+Mod2+89 	move container to workspace  $ws3
-bindcode $mod+Shift+Mod2+83 	move container to workspace  $ws4
-bindcode $mod+Shift+Mod2+84 	move container to workspace  $ws5
-bindcode $mod+Shift+Mod2+85 	move container to workspace  $ws6
-bindcode $mod+Shift+Mod2+79 	move container to workspace  $ws7
-bindcode $mod+Shift+Mod2+80 	move container to workspace  $ws8
-bindcode $mod+Shift+Mod2+81 	move container to workspace  $ws9
-bindcode $mod+Shift+Mod2+90 	move container to workspace  $ws10
+bindcode $mod+Shift+Mod2+87	move container to workspace  $ws1
+bindcode $mod+Shift+Mod2+88	move container to workspace  $ws2
+bindcode $mod+Shift+Mod2+89	move container to workspace  $ws3
+bindcode $mod+Shift+Mod2+83	move container to workspace  $ws4
+bindcode $mod+Shift+Mod2+84	move container to workspace  $ws5
+bindcode $mod+Shift+Mod2+85	move container to workspace  $ws6
+bindcode $mod+Shift+Mod2+79	move container to workspace  $ws7
+bindcode $mod+Shift+Mod2+80	move container to workspace  $ws8
+bindcode $mod+Shift+Mod2+81	move container to workspace  $ws9
+bindcode $mod+Shift+Mod2+90	move container to workspace  $ws10
 
 # move focused container to workspace with numpad keys
 bindcode $mod+Shift+87 	 move container to workspace  $ws1
@@ -149,8 +149,8 @@ bindsym F1 exec ~/.config/i3/scripts/keyhint-2
 # bindsym $mod+F1 exec xed ~/.config/i3/keybindings
 
 # Backlight control
-bindsym XF86MonBrightnessUp exec xbacklight +10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
-bindsym XF86MonBrightnessDown exec xbacklight -10 && notify-send "Brightness - $(xbacklight -get | cut -d '.' -f 1)%"
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 
 # change focus
 bindsym $mod+j focus left
@@ -291,9 +291,6 @@ exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 #exec --no-startup-id dex -a -s /etc/xdg/autostart/:~/.config/autostart/
 exec --no-startup-id dex --autostart --environment i3
 
-# start welcome app
-#exec --no-startup-id sh /usr/share/endeavouros/scripts/welcome --startdelay=3 
-
 # num lock activated
 #exec --no-startup-id numlockx on
 
@@ -325,6 +322,7 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # xscreensaver
 # https://www.jwz.org/xscreensaver
 #exec --no-startup-id xscreensaver --no-splash
+exec --no-startup-id xautolock -time 5 -locker ~/.config/i3/scripts/blur-lock
 
 # Desktop notifications
 # dunst config used ~/.config/dunst/dunstrc
@@ -333,8 +331,6 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # may yneed to run dbus-launch explicitly: 
 #exec --no-startup-id dbus-launch dunst
 exec --no-startup-id dunst
-# alternative if you installed aside with XFCE4:
-# exec --no-startup-id /usr/lib/xfce4/notifyd/xfce4-notifyd &
 
 # autotiling script
 # https://github.com/nwg-piotr/autotiling

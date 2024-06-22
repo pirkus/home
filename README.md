@@ -19,7 +19,7 @@ pacman -Sy archlinux-keyring
 ```
 ## After arch is installed
 ```
-sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3-wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip noto-fonts noto-fonts-emoji alsa-utils xorg-xmodmap scrot vkd3d lib32-vkd3d lib32-gamemode gamemode vulkan-tools xorg-xrandr mangohud steam nerd-fonts galculator xorg-xset dunst udiskie
+sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3-wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip noto-fonts noto-fonts-emoji alsa-utils xorg-xmodmap scrot vkd3d lib32-vkd3d lib32-gamemode gamemode vulkan-tools xorg-xrandr mangohud steam nerd-fonts galculator xorg-xset dunst udiskie grml-zsh-config nano less imagemagick xautolock nvidia-settings acpi sysstat brightnessctl rustup pinta
 ```
 
 ## Install yay
@@ -64,6 +64,23 @@ edit "/etc/systemd/system.conf"
 uncoment: DefaultTimeoutStopSec and set it to 5 or (not tried yet):
 ```shell
 echo "DefaultTimeoutStopSec=5" >> /etc/systemd/system.conf
+```
+
+## Enable tap to click on touchpad
+Save file to "/etc/X11/xorg.conf.d/30-touchpad.conf"
+```
+Section "InputClass"
+    Identifier "touchpad"
+    Driver "libinput"
+    MatchIsTouchpad "on"
+    Option "Tapping" "on"
+    Option "TappingButtonMap" "lmr"
+EndSection
+```
+
+## Allow nvidia GPUs to sleep
+```shell
+sudo systemctl enable nvidia-persistenced.service
 ```
 
 ## /etc/pacman.conf
@@ -122,13 +139,6 @@ Include = /etc/pacman.d/mirrorlist
 Move conf files to /etc/wireguard/some-conf.conf
 ```shell
 wg-quick up some-conf
-```
-## Public wifi (well if you need DNS)
-```shell
-sudo systemctl mask NetworkManager.service
-sudo systemctl mask wpa_supplicant.service
-sudo systemctl stop NetworkManager.service
-sudo systemctl stop wpa_supplicant.service
 ```
 
 ## Yubikey login
