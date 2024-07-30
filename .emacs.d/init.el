@@ -348,6 +348,7 @@
 
   ;; comment to disable rustfmt on save
   (setq rustic-format-on-save t)
+  (setq rustic-format-display-method 'ignore)
   (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
 
 (defun rk/rustic-mode-hook ()
