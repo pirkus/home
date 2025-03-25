@@ -141,6 +141,11 @@ Move conf files to /etc/wireguard/some-conf.conf
 wg-quick up some-conf
 ```
 
+## Multiple displays
+```sh
+xrandr --output eDP-1 --mode 2560x1600 -r 240.00 --output HDMI-1-0 --mode 4096x2160 --right-of eDP-1
+```
+
 ## Yubikey login
 ```shell
 sudo pacman -Syu pam-u2f
