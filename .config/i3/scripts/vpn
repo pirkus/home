@@ -1,16 +1,30 @@
 #!/bin/bash
 
-# Check if the tunnel 'maere' is in the list
+# Check if the tunnel 'maere' exists
 if ip addr show | grep -q "maere"; then
     # Extract the IP address of the 'maere' tunnel
     IP=$(ip addr show maere | grep -oP '(?<=inet\s)\d+\.\d+\.\d+\.\d+')
     
-    # Check if IP was found, otherwise return "DOWN"
-    if [ -n "$IP" ]; then
-        echo "$IP"
-    else
-        echo "DOWN"
-    fi
+    # If an IP is found, print it; otherwise, print "DOWN"
+    [[ -n "$IP" ]] && echo "Internal IP: $IP" || echo "DOWN"
 else
     echo "DOWN"
 fi
+
+# Try different methods to get the external/public IP
+EXTERNAL_IP=$(
+    # Method 1: Use 'ip route get' to find the public-facing source IP
+    ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i == "src") print $(i+1)}' ||
+
+    # Method 2: Find the default gateway dynamically and get the source IP used for it
+    ip route get $(ip route | awk '/default/ {print $3; exit}') 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i == "src") print $(i+1)}' ||
+
+    # Method 3: Get the IP of the default network interface (if explicitly assigned)
+    ip -4 addr show $(ip route | awk '/default/ {print $5; exit}') 2>/dev/null | awk '/inet/ {print $2}' | cut -d/ -f1 ||
+
+    # Method 4: Extract external IP from the kernel's routing FIB (may work in some cases)
+    cat /proc/net/fib_trie 2>/dev/null | grep -A2 '0.0.0.0/0' | tail -n1 | awk '{print $2}'
+)
+
+# If no method succeeds, print "UNKNOWN"
+echo "External IP: ${EXTERNAL_IP:-UNKNOWN}"
