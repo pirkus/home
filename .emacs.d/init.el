@@ -60,13 +60,12 @@
 (setq inhibit-startup-message t)
 
 (setq backup-directory-alist
-          `((".*" . ,temporary-file-directory)))
-    (setq auto-save-file-name-transforms
-          `((".*" ,temporary-file-directory t)))
+      `((".*" . ,temporary-file-directory)))
 
 					; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
                 term-mode-hook
+                vterm-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook))
@@ -86,7 +85,6 @@
   ;; :custom ((doom-modeline-height 15)))
 
 (use-package doom-modeline
-  :init (doom-modeline-mode 1)
   :hook (after-init . doom-modeline-mode)
   :custom
   ;; Don't compact font caches during GC. Windows Laggy Issue
@@ -191,14 +189,14 @@
         (if (looking-at "::") t nil)))))
 
 (defun do-yas-expand ()
-  (let ((yas/fallback-behavior 'return-nil))
-    (yas/expand)))
+  (let ((yas-fallback-behavior 'return-nil))
+    (yas-expand)))
 
 (defun tab-indent-or-complete ()
   (interactive)
   (if (minibufferp)
       (minibuffer-complete)
-    (if (or (not yas/minor-mode)
+    (if (or (not (bound-and-true-p yas-minor-mode))
             (null (do-yas-expand)))
         (if (check-expansion)
             (company-complete-common)
@@ -210,7 +208,7 @@
 (use-package projectile
   :diminish projectile-mode
   :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
+  :custom ((projectile-completion-system 'default))
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
@@ -284,6 +282,11 @@
   :bind
   (([(meta shift up)] . move-text-up)
    ([(meta shift down)] . move-text-down)))
+
+(use-package vterm
+  :commands (vterm vterm-other-window)
+  :custom
+  (vterm-max-scrollback 5000))
 
 (use-package clojure-mode
   :config
@@ -483,7 +486,20 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(elm-mode kotlin-mode rustic hydra nyan-mode yascroll sublimity super-save marginalia all-the-icons-completion nerd-icons-completion yaml-mode web-mode utop flycheck-ocaml merlin-eldoc merlin dune tuareg haskell-mode rust-mode flycheck-joker cider inf-clojure inf-ruby clojure-mode move-text exec-path-from-shell paredit expand-region autopair mode-icons emojify all-the-icons-dired rainbow-delimiters magit lsp-java yasnippet flycheck projectile company-box company dap-mode lsp-treemacs lsp-ui lsp-mode which-key nerd-fonts doom-themes nerd-icons doom-modeline vertico all-the-icons no-littering auto-package-update)))
+   '(all-the-icons all-the-icons-completion all-the-icons-dired
+		   auto-package-update autopair cider clojure-mode
+		   company company-box dap-mode doom-modeline
+		   doom-themes dune elm-mode emojify
+		   exec-path-from-shell expand-region flycheck
+		   flycheck-joker flycheck-ocaml haskell-mode hydra
+		   inf-clojure inf-ruby kotlin-mode lsp-java lsp-mode
+		   lsp-treemacs lsp-ui magit marginalia merlin
+		   merlin-eldoc mode-icons move-text nerd-fonts
+		   nerd-icons nerd-icons-completion no-littering
+		   nyan-mode paredit projectile rainbow-delimiters
+		   rust-mode rustic sublimity super-save tuareg utop
+		   vertico vterm web-mode which-key yaml-mode yascroll
+		   yasnippet)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
