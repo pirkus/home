@@ -60,7 +60,6 @@ user = "greeter"
 sudo systemctl enable greetd.service
 sudo systemctl enable tlp.service
 sudo systemctl enable thermald.service
-sudo systemctl enable power-profiles-daemon.service
 sudo systemctl enable fstrim.timer
 ```
 
