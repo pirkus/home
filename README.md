@@ -57,11 +57,12 @@ user = "greeter"
 
 ## Start services
 ```shell
-sudo systemctl enable greetd.service
-sudo systemctl enable tlp.service
-sudo systemctl enable acpid.service
-sudo systemctl enable thermald.service
-sudo systemctl enable fstrim.timer
+sudo systemctl enable --now greetd.service
+sudo systemctl enable --now tlp.service
+sudo systemctl enable --now acpid.service
+sudo systemctl enable --now thermald.service
+sudo systemctl enable --now fstrim.timer
+sudo systemctl enable --now nvidia-powerd
 ```
 
 ## Install yay
