@@ -31,7 +31,7 @@ sudo pacman -Syu \
   alsa-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
   udiskie udisks2 gvfs gvfs-smb \
   acpi sysstat brightnessctl upower \
-  tlp tlp-rdw powertop thermald cpupower \
+  tlp tlp-rdw powertop thermald cpupower acpid \
   rustup \
   imagemagick maim xclip \
   vulkan-tools vkd3d lib32-vkd3d \
@@ -59,6 +59,7 @@ user = "greeter"
 ```shell
 sudo systemctl enable greetd.service
 sudo systemctl enable tlp.service
+sudo systemctl enable acpid.service
 sudo systemctl enable thermald.service
 sudo systemctl enable fstrim.timer
 ```
@@ -186,6 +187,59 @@ wg-quick up some-conf
 ```sh
 xrandr --output eDP-1 --mode 2560x1600 -r 240.00 --output HDMI-1-0 --mode 4096x2160 --right-of eDP-1
 ```
+
+## Razer power saving
+### sudo nano /etc/tlp.conf (add/modify)
+```apacheconf
+# CPU scaling
+CPU_SCALING_GOVERNOR_ON_AC=performance
+CPU_SCALING_GOVERNOR_ON_BAT=powersave
+
+# AMD pstate (CRITICAL)
+CPU_ENERGY_PERF_POLICY_ON_AC=performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=power
+
+# Boost control (big battery impact)
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+
+# Optional extra savings
+PCIE_ASPM_ON_BAT=powersupersave
+USB_AUTOSUSPEND=1
+```
+
+### Auto switch on plug/unplug
+Create event:
+```shell
+sudo mkdir -p /etc/acpi/events /etc/acpi/actions
+```
+```shell
+sudo nano /etc/acpi/events/ac_adapter
+```
+```apacheconf
+event=ac_adapter
+action=/etc/acpi/actions/power-mode.sh
+```
+
+Create script:
+```shell
+sudo nano /etc/acpi/actions/power-mode.sh
+```
+
+```bash
+#!/bin/sh
+
+online="$(cat /sys/class/power_supply/AC*/online 2>/dev/null | head -n1)"
+
+if [ "$online" = "1" ]; then
+  /usr/bin/tlp ac
+  /usr/bin/cpupower frequency-set -g performance
+else
+  /usr/bin/tlp bat
+  /usr/bin/cpupower frequency-set -g powersave
+fi
+```
+`sudo chmod +x /etc/acpi/actions/power-mode.sh`
 
 ## Yubikey login
 ```shell
