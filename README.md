@@ -19,7 +19,30 @@ pacman -Sy archlinux-keyring
 ```
 ## After arch is installed
 ```
-sudo pacman -Syu base-devel git linux-headers ly xorg-server nvidia zsh zsh-autosuggestions starship i3-wm i3lock i3status i3blocks firefox rofi emacs thunar mc jq wget perl python xfce4-terminal curl openssh unzip noto-fonts noto-fonts-emoji alsa-utils xorg-xmodmap vkd3d lib32-vkd3d lib32-gamemode gamemode vulkan-tools xorg-xrandr mangohud steam nerd-fonts galculator xorg-xset dunst udiskie grml-zsh-config nano less imagemagick xautolock nvidia-settings acpi sysstat brightnessctl rustup pinta maim xclip gfvs-smb
+sudo pacman -Syu \
+  base-devel git \
+  linux-headers nvidia nvidia-settings lib32-nvidia-utils nvidia-prime \
+  ly xorg-server xorg-xauth xorg-xmodmap xorg-xrandr xorg-xset \
+  zsh zsh-autosuggestions starship grml-zsh-config \
+  i3-wm i3lock i3status i3blocks rofi dunst \
+  firefox emacs thunar xfce4-terminal mc \
+  curl wget jq openssh unzip nano less perl python \
+  noto-fonts noto-fonts-emoji ttf-nerd-fonts-symbols-mono \
+  alsa-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
+  udiskie udisks2 gvfs gvfs-smb \
+  acpi sysstat brightnessctl upower power-profiles-daemon \
+  tlp tlp-rdw powertop thermald cpupower \
+  rustup \
+  imagemagick maim xclip \
+  vulkan-tools vkd3d lib32-vkd3d \
+  gamemode lib32-gamemode \
+  mangohud lib32-mangohud \
+  steam \
+  galculator
+```
+
+```
+paru -S pinta xautolock openrazer-daemon openrazer-driver razergenie auto-cpufreq nbfc
 ```
 
 ## Install yay
