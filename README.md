@@ -30,7 +30,7 @@ sudo pacman -Syu \
   noto-fonts noto-fonts-emoji ttf-nerd-fonts-symbols-mono \
   alsa-utils pipewire pipewire-alsa pipewire-pulse wireplumber \
   udiskie udisks2 gvfs gvfs-smb \
-  acpi sysstat brightnessctl upower power-profiles-daemon \
+  acpi sysstat brightnessctl upower \
   tlp tlp-rdw powertop thermald cpupower \
   rustup \
   imagemagick maim xclip \
