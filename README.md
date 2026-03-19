@@ -22,7 +22,7 @@ pacman -Sy archlinux-keyring
 sudo pacman -Syu \
   base-devel git \
   linux-headers nvidia nvidia-settings lib32-nvidia-utils nvidia-prime \
-  ly xorg-server xorg-xauth xorg-xmodmap xorg-xrandr xorg-xset \
+  greetd greetd-tuigreet xorg-server xorg-xauth xorg-xmodmap xorg-xrandr xorg-xset \
   zsh zsh-autosuggestions starship grml-zsh-config \
   i3-wm i3lock i3status i3blocks rofi dunst \
   firefox emacs thunar xfce4-terminal mc \
@@ -45,9 +45,19 @@ sudo pacman -Syu \
 paru -S pinta xautolock openrazer-daemon openrazer-driver razergenie auto-cpufreq nbfc
 ```
 
+## greetd - nano /etc/greetd/config.toml
+```toml
+[terminal]
+vt = 1
+
+[default_session]
+command = "tuigreet --time --remember --remember-session --cmd i3"
+user = "greeter"
+```
+
 ## Start services
 ```shell
-sudo systemctl enable ly.service
+sudo systemctl enable greetd.service
 sudo systemctl enable tlp.service
 sudo systemctl enable thermald.service
 sudo systemctl enable power-profiles-daemon.service
