@@ -18,7 +18,7 @@ pacman-key --populate archlinux
 pacman -Sy archlinux-keyring
 ```
 ## After arch is installed
-```
+```shell
 sudo pacman -Syu \
   base-devel git \
   linux-headers nvidia nvidia-settings lib32-nvidia-utils nvidia-prime \
@@ -41,8 +41,17 @@ sudo pacman -Syu \
   galculator
 ```
 
-```
+```shell
 paru -S pinta xautolock openrazer-daemon openrazer-driver razergenie auto-cpufreq nbfc
+```
+
+## Start services
+```shell
+sudo systemctl enable ly.service
+sudo systemctl enable tlp.service
+sudo systemctl enable thermald.service
+sudo systemctl enable power-profiles-daemon.service
+sudo systemctl enable fstrim.timer
 ```
 
 ## Install yay
