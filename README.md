@@ -41,6 +41,13 @@ sudo pacman -Syu \
   galculator
 ```
 
+### alienware
+sudo pacman -Syu \
+  mesa mesa-utils vulkan-intel intel-media-driver \
+  nvidia-open nvidia-utils lib32-nvidia-utils \
+  tlp tlp-rdw thermald powertop acpid \
+  xorg-xrandr
+
 ```shell
 paru -S pinta xautolock openrazer-daemon openrazer-driver razergenie auto-cpufreq nbfc
 ```
