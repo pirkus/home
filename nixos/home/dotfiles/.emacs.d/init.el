@@ -1,6 +1,9 @@
 ;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
 
 ;; largelly inspired by https://github.com/daviwil/emacs-from-scratch/blob/master/init.el
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file 'noerror)
+
 (setq gc-cons-threshold (* 50 1000 1000))
 
 (defun efs/display-startup-time ()

@@ -97,6 +97,19 @@ let
       "hl.monitor({ output = \\\"$name\\\", mode = \\\"$mode\\\", position = \\\"auto\\\", scale = 1 })" \
       >/dev/null 2>&1 || true
   '';
+
+  # Steam's own launcher does not offer global launch options.  Starting the
+  # client through these wrappers makes its game processes inherit MangoHud
+  # and GameMode, while retaining a plain launcher for troublesome titles.
+  steamPerformance = pkgs.writeShellScriptBin "steam-performance" ''
+    exec ${pkgs.gamemode}/bin/gamemoderun \
+      ${pkgs.mangohud}/bin/mangohud \
+      ${pkgs.steam}/bin/steam "$@"
+  '';
+
+  steamPlain = pkgs.writeShellScriptBin "steam-plain" ''
+    exec ${pkgs.steam}/bin/steam "$@"
+  '';
 in
 {
   home = {
@@ -131,6 +144,8 @@ in
       # Wayland / Hyprland user-side helpers.
       hyprClipboard
       hyprDisplaySetup
+      steamPerformance
+      steamPlain
     ];
   };
 
@@ -160,6 +175,19 @@ in
   programs.starship = {
     enable = true;
     settings = builtins.fromTOML (builtins.readFile (dotfile ".config/starship.toml"));
+  };
+
+  # A user desktop entry shadows Steam's stock entry, so normal app-menu and
+  # launcher starts use the performance wrapper.  `steam-plain` remains
+  # available in a terminal if an individual game dislikes an overlay/preload.
+  xdg.desktopEntries.steam = {
+    name = "Steam";
+    genericName = "Video game digital distribution platform";
+    exec = "${steamPerformance}/bin/steam-performance %U";
+    icon = "steam";
+    terminal = false;
+    categories = [ "Network" "FileTransfer" "Game" ];
+    mimeType = [ "x-scheme-handler/steam" ];
   };
 
   home.file.".emacs.d/init.el".source = dotfile ".emacs.d/init.el";
