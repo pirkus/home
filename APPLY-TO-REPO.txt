@@ -1,0 +1,5 @@
+This ZIP can now be used standalone; merging into pirkus/home is optional.
+
+If merged into the arch-desktop branch, Home Manager prefers the original repository dotfiles and uses bundled fallbacks only for paths absent from the repo.
+
+The installation scripts use an explicit path: flake reference, which prevents an unrelated parent Git worktree from filtering standalone bundle files. When merging into pirkus/home, still add and commit the Nix files normally.
