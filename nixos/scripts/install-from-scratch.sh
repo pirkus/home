@@ -94,7 +94,8 @@ echo "Generating hardware configuration from the installer (without filesystem d
 nixos-generate-config --show-hardware-config --no-filesystems > "$HW_FILE"
 
 echo "Installing NixOS to $stable_id ..."
-sudo nix run "$FLAKE_REF#disko-install" -- \
+sudo nix --extra-experimental-features "nix-command flakes" \
+  run "$FLAKE_REF#disko-install" -- \
   --write-efi-boot-entries \
   --flake "$FLAKE_REF#arch-desktop" \
   --disk main "$stable_id"

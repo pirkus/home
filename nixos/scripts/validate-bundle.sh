@@ -39,6 +39,10 @@ grep -Fq -- '--disk main "$stable_id"' nixos/scripts/install-from-scratch.sh || 
   echo "fresh installer must pass its selected stable disk ID to Disko" >&2
   exit 1
 }
+grep -Fq -- '--extra-experimental-features "nix-command flakes"' nixos/scripts/install-from-scratch.sh || {
+  echo "fresh installer must enable the Nix features required by nix run" >&2
+  exit 1
+}
 grep -Fq 'ERASE $(basename "$stable_id")' nixos/scripts/install-from-scratch.sh || {
   echo "fresh installer must require destructive confirmation" >&2
   exit 1
