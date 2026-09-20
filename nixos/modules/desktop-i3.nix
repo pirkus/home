@@ -70,8 +70,8 @@ in
             --remember-session \
             --remember-user-session \
             --user-menu \
-            --user-menu-min-uid 1000 \
-            --cmd ${pkgs.xinit}/bin/startx
+            --user-menu-min-uid 1000
+            #--cmd ${pkgs.xinit}/bin/startx
       '';
     };
   };
@@ -102,7 +102,7 @@ in
 
   fonts.packages = with pkgs; [
     noto-fonts
-    noto-fonts-emoji
+    noto-fonts-color-emoji
     nerd-fonts.symbols-only
   ];
 }
