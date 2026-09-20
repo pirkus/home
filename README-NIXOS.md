@@ -4,7 +4,7 @@ This bundle targets the desktop machine: Intel i9, 64 GB RAM, NVIDIA RTX 3080 12
 
 ## Important design points
 
-- The ZIP is now standalone. `nixos/home/filken.nix` prefers the original `pirkus/home` dotfiles when they are present, but contains bundled fallback dotfiles so evaluation does not depend on merging this ZIP into another repository.
+- The ZIP is standalone. Home Manager reads its dotfiles from the canonical `nixos/home/dotfiles` directory.
 - `hardware-configuration.nix` intentionally starts as a fail-fast placeholder. The fresh installer replaces it with hardware detection before partitioning; it omits filesystem declarations because Disko declares them.
 - The `filken` account intentionally has no password embedded in Git. The installation wrapper runs `passwd filken` inside the newly installed system before you reboot.
 - The fresh installer leaves every non-selected internal drive untouched; removable and extra data disks are available through UDisks/udiskie. The manually mounted flow can additionally generate stable UUID-based systemd automounts for existing data filesystems.
@@ -66,7 +66,7 @@ The NixOS manual explicitly notes that declaratively-created users have no passw
 
 ## If merging into pirkus/home
 
-You can still overlay this bundle onto the `arch-desktop` branch of `pirkus/home`. The Home Manager module will prefer the real dotfiles in the repository over the bundled fallbacks.
+You can still overlay this bundle onto the `arch-desktop` branch of `pirkus/home`. Put Home Manager-managed dotfiles in `nixos/home/dotfiles`.
 
 The included scripts use an explicit `path:` flake reference, so a standalone extracted bundle is not filtered through an unrelated parent Git worktree. When the files are merged into the real repository, they should still be committed normally.
 

@@ -59,11 +59,11 @@
     fd
 
     # X11 tools present in the Arch setup.
-    xorg.xauth
-    xorg.xrdb
-    xorg.xmodmap
+    xauth
+    xrdb
+    xmodmap
     xrandr
-    xorg.xset
+    xset
     xclip
 
     # Network helper. Removable storage is handled by Home Manager udiskie.

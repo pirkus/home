@@ -33,7 +33,7 @@ in
       generateScript = true;
       extraCommands = ''
         if [ -f "$HOME/.Xresources" ]; then
-          ${pkgs.xorg.xrdb}/bin/xrdb -merge "$HOME/.Xresources"
+          ${pkgs.xrdb}/bin/xrdb -merge "$HOME/.Xresources"
         fi
       '';
     };
@@ -82,8 +82,8 @@ in
     xautolock
     rofi
     dunst
-    xfce.xfce4-terminal
-    xfce.thunar
+    xfce4-terminal
+    thunar
     galculator
     pavucontrol
     playerctl

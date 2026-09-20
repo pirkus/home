@@ -1,16 +1,7 @@
 { lib, pkgs, ... }:
 let
-  repoRoot = ../..;
-  fallbackRoot = ./dotfiles;
-
-  # The bundle is standalone. When it is merged into the original pirkus/home
-  # repository, prefer those real dotfiles; otherwise use the bundled fallbacks.
-  dotfile = rel:
-    let
-      repoPath = repoRoot + "/${rel}";
-      fallbackPath = fallbackRoot + "/${rel}";
-    in
-      if builtins.pathExists repoPath then repoPath else fallbackPath;
+  # Keep all Home Manager-managed dotfiles in one canonical directory.
+  dotfile = rel: ./dotfiles + "/${rel}";
 
   fallbackWallpaper = pkgs.writeText "i3-fallback-wallpaper.ppm" ''
     P3
