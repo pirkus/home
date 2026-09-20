@@ -1,0 +1,5 @@
+configuration { modi: "drun,run,window"; show-icons: true; }
+* { background-color: #383c4a; text-color: #ffffff; }
+window { width: 45%; border: 2px; border-color: #5294e2; }
+listview { lines: 12; }
+element selected { background-color: #5294e2; text-color: #ffffff; }

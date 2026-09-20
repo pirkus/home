@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+if command -v powerprofilesctl >/dev/null 2>&1; then
+  printf 'PWR %s\n' "$(powerprofilesctl get 2>/dev/null || printf '?')"
+fi

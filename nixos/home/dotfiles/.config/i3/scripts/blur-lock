@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+img="$(mktemp --suffix=.png)"
+trap 'rm -f "$img"' EXIT
+maim "$img"
+convert "$img" -blur 0x8 "$img"
+i3lock -i "$img"

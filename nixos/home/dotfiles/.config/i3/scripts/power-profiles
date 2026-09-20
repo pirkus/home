@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+choice="$(printf 'performance\nbalanced\npower-saver\n' | rofi -dmenu -i -p 'Power profile' -config "$HOME/.config/rofi/power-profiles.rasi" || true)"
+[ -n "$choice" ] || exit 0
+powerprofilesctl set "$choice"
