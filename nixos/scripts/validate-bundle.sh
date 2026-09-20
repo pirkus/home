@@ -53,6 +53,11 @@ for f in nixos/scripts/prepare-arch-desktop.sh nixos/scripts/generate-storage-co
     exit 1
   }
 done
+if grep -Eq '^[[:space:]]*--remember-session[[:space:]]' nixos/modules/desktop-i3.nix \
+  && grep -Eq '^[[:space:]]*--remember-user-session[[:space:]]' nixos/modules/desktop-i3.nix; then
+  echo "tuigreet remember-session modes are mutually exclusive" >&2
+  exit 1
+fi
 
 printf 'Static bundle validation passed.\n'
 if [[ ! -e flake.lock ]]; then

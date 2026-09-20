@@ -57,7 +57,8 @@ in
       # wrapper because its distro-generic default refers to /usr/bin/env,
       # which intentionally does not exist on NixOS. Keep the NixOS session
       # wrapper in the chain so profiles, Xresources and graphical-session
-      # systemd targets are initialized for a selected i3 session.
+      # systemd targets are initialized for a selected i3 session. Tuigreet's
+      # --remember-user-session and --remember-session modes are exclusive.
       command = ''
         ${pkgs.coreutils}/bin/env \
           TUIGREET_SESSIONS_DIRS=${hyprlandSessions} \
@@ -67,11 +68,9 @@ in
             --time \
             --greeting 'F3: choose i3 / Hyprland' \
             --remember \
-            --remember-session \
             --remember-user-session \
             --user-menu \
             --user-menu-min-uid 1000
-            #--cmd ${pkgs.xinit}/bin/startx
       '';
     };
   };
