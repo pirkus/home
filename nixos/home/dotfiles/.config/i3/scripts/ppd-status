@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
-if command -v powerprofilesctl >/dev/null 2>&1; then
-  printf 'PWR %s\n' "$(powerprofilesctl get 2>/dev/null || printf '?')"
-fi
+#
+# power-profiles-daemon implementation:
+# needs package power-profiles-daemon installed and the service running see here:
+# https://wiki.archlinux.org/title/CPU_frequency_scaling#power-profiles-daemon
+# used in i3-blocks: ~/.config/i3/i3blocks.conf together with: ~/.config/i3/scripts/power-profiles
+
+# script to show current power profile
+
+current_profile=$(/usr/bin/powerprofilesctl get)
+echo "$current_profile"
+

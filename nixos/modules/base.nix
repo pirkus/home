@@ -6,6 +6,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.consoleMode = "max";
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # The Arch README used this as an NVMe stability workaround.  Deliberately
   # not carrying over "nomodeset" because that would fight the NVIDIA setup.

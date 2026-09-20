@@ -12,6 +12,19 @@ let
 
   originalI3 = builtins.readFile (dotfile ".config/i3/config");
 
+  originalNano = builtins.readFile (dotfile ".config/nano/nanorc");
+
+  patchedNano = builtins.replaceStrings
+    [
+      "/usr/share/nano/*.nanorc"
+      "/usr/share/nano-syntax-highlighting/*.nanorc"
+    ]
+    [
+      "${pkgs.nano}/share/nano/*.nanorc"
+      "${pkgs.nano-syntax-highlighting}/share/nano/*.nanorc"
+    ]
+    originalNano;
+
   patchedI3 = builtins.replaceStrings
     [
       "/usr/bin/firefox"
@@ -175,10 +188,7 @@ in
     recursive = true;
   };
 
-  xdg.configFile."nano" = {
-    source = dotfile ".config/nano";
-    recursive = true;
-  };
+  xdg.configFile."nano/nanorc".text = patchedNano;
 
   # The old i3 config calls ~/.screenlayout/monitor.sh. Keep its X11 path
   # connector-agnostic and seed autorandr by EDID on the first i3 login.

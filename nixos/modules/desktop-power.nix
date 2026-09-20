@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
   # The i3 configuration has a power-profile menu. On the desktop, use the
   # standard Linux power-profiles daemon rather than laptop-focused TLP.
@@ -10,6 +10,6 @@
 
   environment.systemPackages = [
     pkgs.power-profiles-daemon
-    pkgs.linuxPackages.cpupower
+    config.boot.kernelPackages.cpupower
   ];
 }
