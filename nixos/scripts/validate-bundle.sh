@@ -47,6 +47,14 @@ grep -Fq 'ERASE $(basename "$stable_id")' nixos/scripts/install-from-scratch.sh 
   echo "fresh installer must require destructive confirmation" >&2
   exit 1
 }
+grep -Fq 'subvol=@root' nixos/scripts/install-from-scratch.sh || {
+  echo "fresh installer must remount the installed root after disko-install" >&2
+  exit 1
+}
+grep -Fq '"$installed_root/home/filken/nixos-config"' nixos/scripts/install-from-scratch.sh || {
+  echo "fresh installer must preserve the generated configuration" >&2
+  exit 1
+}
 for f in nixos/scripts/prepare-arch-desktop.sh nixos/scripts/generate-storage-config.sh; do
   grep -Fq '[[ "$TARGET_ROOT" == "/" ]]' "$f" || {
     echo "$f must reject the live root filesystem" >&2

@@ -26,7 +26,7 @@ The confirmed disk is erased and receives this layout:
 - 16 GiB swap partition (ordinary swap; this layout does **not** support hibernation)
 - remaining capacity as Btrfs, using `@root`, `@home`, `@nix`, and `@snapshots` subvolumes with Zstandard compression
 
-The remaining internal drives are left untouched. The installer uses the pinned Disko configuration and writes a normal UEFI boot entry. It asks for the `filken` password before it permits a reboot.
+The remaining internal drives are left untouched. The installer uses the pinned Disko configuration, writes a normal UEFI boot entry, and copies the generated configuration to `/home/filken/nixos-config` in the installed system. It asks for the `filken` password before it permits a reboot.
 
 ## Manually partitioned installation
 

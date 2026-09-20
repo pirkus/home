@@ -100,7 +100,40 @@ sudo nix --extra-experimental-features "nix-command flakes" \
   --flake "$FLAKE_REF#arch-desktop" \
   --disk main "$stable_id"
 
+root_partition="$(
+  lsblk --json --output PATH,FSTYPE,LABEL "$canonical_disk" |
+    jq -r '.blockdevices[] | recurse(.children[]?) | select(.fstype == "btrfs" and .label == "nixos") | .path' |
+    head -n1
+)"
+[[ -n "$root_partition" ]] || die "Could not find the installed Btrfs filesystem on $canonical_disk."
+
+installed_root="/mnt/arch-desktop-installed"
+cleanup_installed_root() {
+  for mount_path in "$installed_root/home" "$installed_root/nix" "$installed_root"; do
+    if mountpoint -q "$mount_path"; then
+      sudo umount "$mount_path"
+    fi
+  done
+}
+trap cleanup_installed_root EXIT
+
+sudo install -d -m 0755 "$installed_root"
+sudo mount -t btrfs -o subvol=@root "$root_partition" "$installed_root"
+sudo install -d -m 0755 "$installed_root/home" "$installed_root/nix"
+sudo mount -t btrfs -o subvol=@home "$root_partition" "$installed_root/home"
+sudo mount -t btrfs -o subvol=@nix "$root_partition" "$installed_root/nix"
+
+echo
+echo "Copying the generated system configuration into the installed system ..."
+sudo install -d -m 0755 "$installed_root/home/filken/nixos-config"
+sudo cp -a "$REPO_ROOT/." "$installed_root/home/filken/nixos-config/"
+sudo nixos-enter --root "$installed_root" -c \
+  'chown -R filken:users /home/filken/nixos-config'
+
 echo
 echo "Set the login password for filken before rebooting."
-sudo nixos-enter --root /mnt -c 'passwd filken'
+sudo nixos-enter --root "$installed_root" -c 'passwd filken'
+cleanup_installed_root
+trap - EXIT
+sudo rmdir "$installed_root"
 echo "Installation complete. Reboot only after the password command succeeds."
