@@ -44,6 +44,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    codex
     git
     curl
     wget
