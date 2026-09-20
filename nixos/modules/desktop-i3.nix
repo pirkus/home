@@ -59,19 +59,21 @@ in
       # wrapper in the chain so profiles, Xresources and graphical-session
       # systemd targets are initialized for a selected i3 session. Tuigreet's
       # --remember-user-session and --remember-session modes are exclusive.
-      command = ''
-        ${pkgs.coreutils}/bin/env \
-          TUIGREET_SESSIONS_DIRS=${hyprlandSessions} \
-          TUIGREET_XSESSIONS_DIRS=${sessionsDir}/xsessions \
-          TUIGREET_XSESSION_WRAPPER='${pkgs.xinit}/bin/startx ${xsessionWrapper}' \
-          ${lib.getExe pkgs.tuigreet} \
-            --time \
-            --greeting 'F3: choose i3 / Hyprland' \
-            --remember \
-            --remember-user-session \
-            --user-menu \
-            --user-menu-min-uid 1000
-      '';
+      command = lib.escapeShellArgs [
+        "${pkgs.coreutils}/bin/env"
+        "TUIGREET_SESSIONS_DIRS=${hyprlandSessions}"
+        "TUIGREET_XSESSIONS_DIRS=${sessionsDir}/xsessions"
+        "TUIGREET_XSESSION_WRAPPER=${pkgs.xinit}/bin/startx ${xsessionWrapper}"
+        (lib.getExe pkgs.tuigreet)
+        "--time"
+        "--greeting"
+        "F3: choose i3 / Hyprland"
+        "--remember"
+        "--remember-user-session"
+        "--user-menu"
+        "--user-menu-min-uid"
+        "1000"
+      ];
     };
   };
 

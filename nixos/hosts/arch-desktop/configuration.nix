@@ -4,14 +4,8 @@
     ./disko.nix
     ./hardware-configuration.nix
     ./storage-configuration.nix
-    ../../modules/base.nix
-    ../../modules/desktop-i3.nix
-    ../../modules/desktop-hyprland.nix
+    ../../profiles/desktop.nix
     ../../modules/nvidia-desktop.nix
-    ../../modules/audio.nix
-    ../../modules/desktop-power.nix
-    ../../modules/gaming.nix
-    ../../modules/yubikey.nix
   ];
 
   networking.hostName = "arch-desktop";

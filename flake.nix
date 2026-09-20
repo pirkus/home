@@ -18,13 +18,12 @@
   outputs = { self, nixpkgs, home-manager, disko, ... }:
     let
       system = "x86_64-linux";
-    in {
-      nixosConfigurations.arch-desktop = nixpkgs.lib.nixosSystem {
+      mkHost = hostModule: nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit self; };
         modules = [
           disko.nixosModules.disko
-          ./nixos/hosts/arch-desktop/configuration.nix
+          hostModule
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
@@ -34,6 +33,9 @@
           }
         ];
       };
+    in {
+      nixosConfigurations.arch-desktop =
+        mkHost ./nixos/hosts/arch-desktop/configuration.nix;
 
       packages.${system}.disko-install = disko.packages.${system}.disko-install;
     };
