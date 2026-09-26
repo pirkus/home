@@ -64,49 +64,6 @@ let
     printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
   '';
 
-  # Hyprland equivalent of the old DP-4 xrandr line without assuming a
-  # connector name. It finds the connected display that exposes 3440x1440 and
-  # selects the refresh closest to 144 Hz at that resolution. If no such mode exists,
-  # the wildcard `preferred` monitor rule remains in effect.
-  hyprDisplaySetup = pkgs.writeShellScriptBin "hypr-display-setup" ''
-    set -eu
-
-    json="$(${pkgs.hyprland}/bin/hyprctl monitors all -j 2>/dev/null || true)"
-    [ -n "$json" ] || exit 0
-
-    choice="$(printf '%s' "$json" | ${pkgs.jq}/bin/jq -r '
-      [ .[] as $m
-        | ($m.availableModes // [])[] as $mode
-        | select($mode | test("^3440x1440@[0-9.]+Hz$"))
-        | ($mode | capture("@(?<hz>[0-9.]+)Hz$").hz | tonumber) as $hz
-        | { name: $m.name, mode: $mode, hz: $hz, delta: (($hz - 144) | if . < 0 then -. else . end) }
-      ]
-      | sort_by(.delta, (.hz * -1))
-      | .[0] // empty
-      | [.name, .mode]
-      | @tsv
-    ')"
-
-    [ -n "$choice" ] || exit 0
-    name="$(printf '%s' "$choice" | ${pkgs.coreutils}/bin/cut -f1)"
-    mode="$(printf '%s' "$choice" | ${pkgs.coreutils}/bin/cut -f2)"
-    [ -n "$name" ] && [ -n "$mode" ] || exit 0
-
-    # `hyprctl eval` is the current Lua-aware runtime configuration interface.
-    ${pkgs.hyprland}/bin/hyprctl eval \
-      "hl.monitor({ output = \\\"$name\\\", mode = \\\"$mode\\\", position = \\\"auto\\\", scale = 1 })" \
-      >/dev/null 2>&1 || true
-  '';
-
-  # Steam's own launcher does not offer global launch options.  Starting the
-  # client through these wrappers makes its game processes inherit MangoHud
-  # and GameMode, while retaining a plain launcher for troublesome titles.
-  steamPerformance = pkgs.writeShellScriptBin "steam-performance" ''
-    exec ${pkgs.gamemode}/bin/gamemoderun \
-      ${pkgs.mangohud}/bin/mangohud \
-      ${pkgs.steam}/bin/steam "$@"
-  '';
-
   steamPlain = pkgs.writeShellScriptBin "steam-plain" ''
     exec ${pkgs.steam}/bin/steam "$@"
   '';
@@ -143,8 +100,6 @@ in
 
       # Wayland / Hyprland user-side helpers.
       hyprClipboard
-      hyprDisplaySetup
-      steamPerformance
       steamPlain
     ];
   };
@@ -177,13 +132,11 @@ in
     settings = builtins.fromTOML (builtins.readFile (dotfile ".config/starship.toml"));
   };
 
-  # A user desktop entry shadows Steam's stock entry, so normal app-menu and
-  # launcher starts use the performance wrapper.  `steam-plain` remains
-  # available in a terminal if an individual game dislikes an overlay/preload.
+  # A user desktop entry shadows Steam's stock entry and launches it unwrapped.
   xdg.desktopEntries.steam = {
     name = "Steam";
     genericName = "Video game digital distribution platform";
-    exec = "${steamPerformance}/bin/steam-performance %U";
+    exec = "${steamPlain}/bin/steam-plain %U";
     icon = "steam";
     terminal = false;
     categories = [ "Network" "FileTransfer" "Game" ];
@@ -283,8 +236,9 @@ in
 
     "hyprland/workspaces" = {
       format = "{name}";
-      on-scroll-up = "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'";
-      on-scroll-down = "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'";
+      # `hyprctl dispatch` takes a native dispatcher and cannot evaluate Lua.
+      on-scroll-up = "hyprctl dispatch workspace e+1";
+      on-scroll-down = "hyprctl dispatch workspace e-1";
     };
     "hyprland/window" = {
       max-length = 80;

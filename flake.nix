@@ -13,9 +13,14 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    lmstudio = {
+      url = "github:Daaboulex/lmstudio-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, disko, ... }:
+  outputs = { self, nixpkgs, home-manager, disko, lmstudio, ... }:
     let
       system = "x86_64-linux";
       mkHost = hostModule: nixpkgs.lib.nixosSystem {
@@ -23,6 +28,7 @@
         specialArgs = { inherit self; };
         modules = [
           disko.nixosModules.disko
+          { nixpkgs.overlays = [ lmstudio.overlays.default ]; }
           hostModule
           home-manager.nixosModules.home-manager
           {

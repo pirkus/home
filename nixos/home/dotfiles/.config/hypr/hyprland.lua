@@ -38,16 +38,15 @@ hl.config({
   misc = {
     disable_hyprland_logo = true,
     disable_splash_rendering = true,
-    vfr = true,
   },
   binds = {
     workspace_back_and_forth = true,
   },
 })
 
--- Connector-agnostic fallback. The startup helper below upgrades the
--- 3440x1440 display to the refresh closest to the old 144 Hz setup.
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+-- The M34WQ is connected as DP-3 and advertises this exact mode.  Using it
+-- directly avoids the compositor's 59.97 Hz "preferred" mode.
+hl.monitor({ output = "DP-3", mode = "3440x1440@144.00Hz", position = "auto", scale = 1 })
 
 -- Preserve the old i3 workspace intent.
 hl.window_rule({ match = { class = "(?i)^xfce4-terminal$" }, workspace = "1" })
@@ -72,12 +71,7 @@ end
 
 -- Startup mirrors the useful parts of the i3 session, but uses native
 -- Wayland tools. UWSM owns the session lifecycle and XDG autostart.
-local function configure_desktop_monitor()
-  hl.exec_cmd("hypr-display-setup")
-end
-
 hl.on("hyprland.start", function()
-  configure_desktop_monitor()
   hl.exec_cmd("uwsm app -- waybar")
   hl.exec_cmd("uwsm app -- mako")
   hl.exec_cmd("uwsm app -- swaybg -c '#08052b'")
@@ -88,18 +82,14 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("sleep 7 && uwsm app -- firefox")
 end)
 
--- Re-run connector-agnostic mode selection when a display appears.
-hl.on("monitor.added", function(_)
-  configure_desktop_monitor()
-end)
-
 -- Core i3-like keybindings.
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("uwsm stop"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
-hl.bind(mainMod .. " + SHIFT + C", hl.dsp.reload_config())
-hl.bind(mainMod .. " + SHIFT + R", hl.dsp.reload_config())
+-- Reloading is a hyprctl action; it is not a Lua dispatcher in Hyprland 0.56.
+hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprctl reload"))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload"))
 
 hl.bind(mainMod .. " + J", hl.dsp.focus({ direction = "l" }))
 hl.bind(mainMod .. " + K", hl.dsp.focus({ direction = "d" }))
@@ -136,7 +126,9 @@ hl.bind(mainMod .. " + SHIFT + TAB", hl.dsp.focus({ workspace = "e-1" }))
 
 for i = 1, 10 do
   local key = tostring(i % 10)
-  local workspace = tostring(i)
+  -- Keep numeric workspaces numeric. This is the representation expected by
+  -- Hyprland's Lua dispatcher (and used by its shipped example config).
+  local workspace = i
   hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = workspace }))
   hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = workspace }))
 end

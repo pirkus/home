@@ -7,6 +7,8 @@
   boot.loader.systemd-boot.consoleMode = "max";
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Enable NTFS mounting (including Thunar/UDisks removable-drive mounts).
+  boot.supportedFilesystems = [ "ntfs" ];
 
   # The Arch README used this as an NVMe stability workaround.  Deliberately
   # not carrying over "nomodeset" because that would fight the NVIDIA setup.
@@ -46,6 +48,7 @@
 
   environment.systemPackages = with pkgs; [
     codex
+    opencode
     git
     curl
     wget
@@ -79,5 +82,8 @@
     lm_sensors
     pciutils
     usbutils
+
+    # Stable LM Studio, provided by the lmstudio-nix overlay.
+    lmstudio
   ];
 }
