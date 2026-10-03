@@ -76,6 +76,7 @@ in
 
     packages = with pkgs; [
       firefox
+      signal-desktop
       emacs
       mc
       pinta
