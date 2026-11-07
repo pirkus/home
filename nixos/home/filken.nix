@@ -67,8 +67,11 @@ let
   steamPlain = pkgs.writeShellScriptBin "steam-plain" ''
     exec ${pkgs.steam}/bin/steam "$@"
   '';
+
 in
 {
+  imports = [ ./local-ai.nix ];
+
   home = {
     username = "filken";
     homeDirectory = "/home/filken";
@@ -81,11 +84,19 @@ in
       mc
       pinta
 
-      arc-theme
+      # i3 and Hyprland only need GTK; skip Arc's broken GNOME Shell assets.
+      (arc-theme.overrideAttrs (old: {
+        mesonFlags = builtins.filter
+          (flag: !(lib.hasPrefix "-Dthemes=" flag))
+          (old.mesonFlags or [ ])
+          ++ [ (lib.mesonOption "themes" "gtk3,gtk4") ];
+      }))
       qogir-theme
       qogir-icon-theme
 
       rustup
+      # Lean toolchain manager, including the lean and lake commands.
+      elan
 
       bash
       coreutils
@@ -106,6 +117,18 @@ in
   };
 
   programs.home-manager.enable = true;
+
+  programs.lmstudio = {
+    home = "/home/filken/.lmstudio";
+    server = {
+      enable = true;
+      autostart = true;
+      port = 1234;
+    };
+  };
+
+  # default.target pulls this service in; ordering after it creates a cycle.
+  systemd.user.services.lmstudio.Unit.After = lib.mkForce [ ];
 
   services.udiskie = {
     enable = true;

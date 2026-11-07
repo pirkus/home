@@ -4,6 +4,7 @@
   programs.gamemode.enable = true;
 
   environment.systemPackages = with pkgs; [
+    lutris
     mangohud
     vulkan-tools
     vkd3d

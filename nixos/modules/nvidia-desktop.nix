@@ -1,7 +1,5 @@
 { ... }:
 {
-  # Desktop RTX 3080: the NVIDIA card directly drives Xorg. There is no PRIME
-  # configuration and therefore no PCI bus-ID configuration to maintain.
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.graphics = {
@@ -13,8 +11,6 @@
   hardware.nvidia = {
     modesetting.enable = true;
 
-    # RTX 3080 is Ampere, so it is supported by NVIDIA's open kernel module.
-    # Userspace remains NVIDIA's proprietary driver stack.
     open = true;
 
     nvidiaSettings = true;

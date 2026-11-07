@@ -141,7 +141,7 @@ hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("uwsm app -- thunar"))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("$HOME/.config/i3/scripts/power-profiles"))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.focus({ workspace = "empty" }))
 
-hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region"))
+hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only"))
 
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })

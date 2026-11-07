@@ -35,6 +35,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
+            home-manager.sharedModules = [ lmstudio.homeModules.default ];
             home-manager.users.filken = import ./nixos/home/filken.nix;
           }
         ];
@@ -43,6 +44,11 @@
       nixosConfigurations.arch-desktop =
         mkHost ./nixos/hosts/arch-desktop/configuration.nix;
 
-      packages.${system}.disko-install = disko.packages.${system}.disko-install;
+      packages.${system} = {
+        disko-install = disko.packages.${system}.disko-install;
+        gpu-unlock =
+          self.nixosConfigurations.arch-desktop.config.boot.kernelPackages.callPackage
+            ./nixos/packages/gpu-unlock.nix { };
+      };
     };
 }
