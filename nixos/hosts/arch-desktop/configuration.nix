@@ -21,8 +21,8 @@
     };
   };
 
-  # Allow other computers to reach Open WebUI and the protected OpenCode UI.
-  networking.firewall.allowedTCPPorts = [ 3000 4096 ];
+  # Allow other computers to reach Open WebUI and the OpenCode web UI.
+  networking.firewall.allowedTCPPorts = [ 3000 49374 ];
 
   # Start user services, including llmster, at boot without waiting for login.
   users.users.filken.linger = true;
