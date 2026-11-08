@@ -45,7 +45,7 @@ let
     originalI3;
 
   patchedI3Scripts = pkgs.runCommand "filken-i3-scripts" {
-    nativeBuildInputs = [ pkgs.bash pkgs.perl ];
+    nativeBuildInputs = [ pkgs.bash pkgs.perl pkgs.python3 ];
   } ''
     mkdir -p "$out"
     cp -R ${dotfile ".config/i3/scripts"}/. "$out"/
@@ -54,6 +54,8 @@ let
       substituteInPlace "$out/ppd-status" \
         --replace-fail "/usr/bin/powerprofilesctl" "powerprofilesctl"
     fi
+    substituteInPlace "$out/lmstudio_status" \
+      --replace-fail 'LMS_COMMAND = "lms"' 'LMS_COMMAND = "${pkgs.lmstudio-server}/bin/lms"'
     patchShebangs "$out"
   '';
 
@@ -70,18 +72,21 @@ let
 
 in
 {
-  imports = [ ./local-ai.nix ];
+  imports = [ ./local-ai.nix ./ralph-orchestrator.nix ./ai-gaming.nix ];
 
   home = {
     username = "filken";
     homeDirectory = "/home/filken";
     stateVersion = "26.05";
+    sessionPath = [ "/home/filken/.local/bin" ];
 
     packages = with pkgs; [
+      nodejs
       firefox
       signal-desktop
       emacs
       mc
+      tmux
       pinta
 
       # i3 and Hyprland only need GTK; skip Arc's broken GNOME Shell assets.
@@ -129,6 +134,8 @@ in
 
   # default.target pulls this service in; ordering after it creates a cycle.
   systemd.user.services.lmstudio.Unit.After = lib.mkForce [ ];
+  # Also bind the HTTP API to LAN interfaces; the firewall permits TCP 1234.
+  systemd.user.services.lmstudio.Service.Environment = [ "LMS_SERVER_HOST=0.0.0.0" ];
 
   services.udiskie = {
     enable = true;
@@ -170,6 +177,9 @@ in
   home.file.".emacs.d/init.el".source = dotfile ".emacs.d/init.el";
   home.file.".Xresources".source = dotfile ".Xresources";
   home.file.".Xmodmap".source = dotfile ".Xmodmap";
+
+  # Run the idle suspend timer under a dedicated name.
+  home.file.".local/bin/xautosuspend".source = "${pkgs.xautolock}/bin/xautolock";
 
   xdg.configFile."i3/config".text = patchedI3;
   xdg.configFile."i3/i3blocks.conf".source = dotfile ".config/i3/i3blocks.conf";

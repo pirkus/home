@@ -37,7 +37,7 @@ in {
     Unit.Description = "OpenCode shared server and web UI";
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.opencode}/bin/opencode serve --service --hostname 127.0.0.1 --port 49374";
+      ExecStart = "${pkgs.opencode}/bin/opencode serve --service --hostname 0.0.0.0 --port 49374";
       WorkingDirectory = "%h/home";
       Environment = "PATH=%h/.nix-profile/bin:/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin";
       Restart = "on-failure";

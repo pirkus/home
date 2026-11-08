@@ -1,0 +1,32 @@
+--- a/crates/ralph-api/src/lib.rs
++++ b/crates/ralph-api/src/lib.rs
+@@ -4,6 +4,7 @@
+ pub mod config_domain;
+ pub mod errors;
+ pub mod event_watcher;
++mod task_log_watcher;
+ pub mod idempotency;
+ pub mod loop_domain;
+ pub mod loop_side_effects;
+--- a/crates/ralph-api/src/event_watcher.rs
++++ b/crates/ralph-api/src/event_watcher.rs
+@@ -27,6 +27,7 @@
+     streams: StreamDomain,
+     shutdown: tokio::sync::watch::Receiver<()>,
+ ) -> tokio::task::JoinHandle<()> {
++    let _log_watcher = crate::task_log_watcher::spawn(streams.clone(), shutdown.clone());
+     tokio::spawn(async move {
+         run_watcher(workspace_root, streams, shutdown).await;
+     })
+--- a/crates/ralph-api/src/stream_domain/mod.rs
++++ b/crates/ralph-api/src/stream_domain/mod.rs
+@@ -136,6 +136,9 @@
+         let cursor = if let Some(cursor) = &params.cursor {
+             validate_cursor(cursor)?;
+             cursor.clone()
++        } else if accepted_topics.iter().any(|topic| topic == "task.log.line") {
++            // A newly opened task view needs recent output, not only future lines.
++            "0-0".to_string()
+         } else {
+             self.latest_cursor_or_now()?
+         };

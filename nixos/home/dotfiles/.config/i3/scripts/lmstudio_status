@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""i3blocks status for loaded LM Studio models; querying never starts the server."""
+from datetime import datetime
+import html
+import json
+import os
+import re
+from pathlib import Path
+import signal
+import subprocess
+import time
+
+LMS_COMMAND = "lms"
+STATES = {
+    "idle": "idle",
+    "processingPrompt": "processing prompt",
+    "generating": "generating",
+    "computingEmbedding": "embedding",
+    "computingDecision": "deciding",
+}
+
+
+# llama.cpp reports this live every few seconds; tg_3s is its rolling rate.
+SPEED_PATTERN = re.compile(
+    r"^\[([^]]+)\]\[DEBUG\].*\bslot\s+print_timing:.*"
+    r"\bn_gen\s*=.*\btg_3s\s*=\s*([0-9]+(?:\.[0-9]+)?)\s+t/s"
+)
+
+
+def parse_speed(text, now):
+    for line in reversed(text.splitlines()):
+        match = SPEED_PATTERN.search(line)
+        if match:
+            try:
+                age = now - datetime.fromisoformat(match[1]).timestamp()
+            except ValueError:
+                return None
+            return float(match[2]) if -2 <= age <= 12 else None
+        # A new request has begun but has no timing sample yet. Do not reuse
+        # the previous request's speed even if it completed recently.
+        if "[INFO][" in line and ("Streaming response..." in line or "Running chat completion" in line):
+            return None
+    return None
+
+
+def recent_speed():
+    try:
+        logs = Path.home() / ".lmstudio/server-logs"
+        latest = max(logs.glob("*/*.log"), key=lambda p: p.stat().st_mtime)
+        with latest.open("rb") as handle:
+            handle.seek(max(0, latest.stat().st_size - 131072))
+            text = handle.read(131072).decode(errors="replace")
+        return parse_speed(text, time.time())
+    except (OSError, ValueError):
+        return None
+
+
+def render(models, tokens_per_second=None):
+    if not isinstance(models, list) or any(not isinstance(m, dict) for m in models):
+        raise ValueError("Expected lms ps model array")
+    if not models:
+        return "LLM none loaded", "LLM none", "#717171"
+    full, short = [], []
+    active = False
+    queued = False
+    for model in sorted(models, key=lambda m: (m.get("status") == "idle", str(m.get("identifier", "")))):
+        identifier = model.get("identifier") or model.get("modelKey") or "unknown model"
+        name = " ".join(str(identifier).rsplit("/", 1)[-1].split())
+        if len(name) > 36:
+            name = name[:33] + "..."
+        state = STATES.get(model.get("status"), "status unknown")
+        count = model.get("queued", 0)
+        count = count if isinstance(count, int) and count > 0 else 0
+        active |= model.get("status") in STATES and model.get("status") != "idle"
+        queued |= count > 0
+        suffix = f" (+{count} queued)" if count else ""
+        rate = ""
+        # Runtime timing lines lack a model ID. Only attribute them when there
+        # is one loaded model; multiple models retain their normal status.
+        if len(models) == 1 and model.get("status") == "generating" and tokens_per_second is not None:
+            rate = f" · {tokens_per_second:.1f} tok/s"
+        full.append(f"{html.escape(name)}: {state}{suffix}{rate}")
+        short.append(f"{html.escape(name)}: {state}{rate}")
+    color = "#8fbc8f" if active else "#FFAE00" if queued else "#b0b5bd"
+    return "LLM " + " | ".join(full), "LLM " + " | ".join(short), color
+
+
+def status():
+    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+    if (runtime / "lmstudio-gaming/active").exists():
+        return "LLM gaming (blocked)", "LLM gaming", "#FFAE00"
+    env = dict(os.environ)
+    # The CLI's explicit-instance override disables discovery/automatic startup.
+    env.setdefault("LMS_API_SERVER_INFO_PATH", str(Path.home() / ".lmstudio/.internal/http-server.json"))
+    try:
+        process = subprocess.Popen(
+            [LMS_COMMAND, "ps", "--json"], stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, env=env, start_new_session=True)
+    except OSError:
+        return "LM Studio unavailable", "LLM N/A", "#717171"
+    try:
+        output, _ = process.communicate(timeout=4)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        return "LM Studio unavailable", "LLM N/A", "#717171"
+    if process.returncode:
+        return "LM Studio offline", "LLM offline", "#717171"
+    try:
+        models = json.loads(output)
+        single_generator = (
+            isinstance(models, list) and len(models) == 1
+            and isinstance(models[0], dict) and models[0].get("status") == "generating"
+        )
+        speed = recent_speed() if single_generator else None
+        return render(models, speed)
+    except (ValueError, TypeError):
+        return "LM Studio unavailable", "LLM N/A", "#717171"
+
+
+if __name__ == "__main__":
+    print("\n".join(status()))

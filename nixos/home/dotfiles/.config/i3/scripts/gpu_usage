@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# NVIDIA GPU load, allocated VRAM, temperature, and power for i3blocks.
+# Set BLOCK_INSTANCE to a GPU index/UUID to display only that device.
+set -u
+export LC_ALL=C
+
+args=(--query-gpu=index,name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw
+      --format=csv,noheader,nounits)
+if [[ -n "${BLOCK_INSTANCE:-}" ]]; then
+  args+=(--id="$BLOCK_INSTANCE")
+fi
+
+if ! stats=$(timeout 3s nvidia-smi "${args[@]}" 2>/dev/null); then
+  printf 'GPU N/A\nGPU N/A\n#717171\n'
+  exit 0
+fi
+
+awk -F ',' '
+function numeric(value) { return value ~ /^[0-9]+([.][0-9]+)?$/ }
+NF == 7 {
+  for (i = 1; i <= NF; i++) gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
+  if (!numeric($1)) next
+  name = $2
+  sub(/^NVIDIA[[:space:]]+/, "", name)
+  sub(/^GeForce[[:space:]]+/, "", name)
+  if (name == "" || name == "N/A" || name == "[N/A]") name = "GPU" $1
+  load = numeric($3) ? sprintf("%.0f%%", $3) : "N/A"
+  memory = numeric($4) && numeric($5) ? sprintf("%.1f/%.1fG", $4 / 1024, $5 / 1024) : "VRAM N/A"
+  temperature = numeric($6) ? sprintf("%.0f°C", $6) : "temp N/A"
+  power = numeric($7) ? sprintf("%.0fW", $7) : ""
+  separator = count++ ? " | " : ""
+  full = full separator name " " load " " memory " " temperature (power == "" ? "" : " " power)
+  short = short separator name " " load
+  if (numeric($6) && $6 >= 85) severity = 2
+  else if (numeric($6) && $6 >= 75 && severity < 1) severity = 1
+}
+END {
+  if (!count) {
+    print "GPU N/A\nGPU N/A\n#717171"
+  } else {
+    print full
+    print short
+    print severity == 2 ? "#FF0000" : severity == 1 ? "#FFAE00" : "#b0b5bd"
+  }
+}
+' <<< "$stats"

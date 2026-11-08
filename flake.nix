@@ -46,6 +46,8 @@
 
       packages.${system} = {
         disko-install = disko.packages.${system}.disko-install;
+        ralph-orchestrator = nixpkgs.legacyPackages.${system}.callPackage
+          ./nixos/packages/ralph-orchestrator.nix { };
         gpu-unlock =
           self.nixosConfigurations.arch-desktop.config.boot.kernelPackages.callPackage
             ./nixos/packages/gpu-unlock.nix { };

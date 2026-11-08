@@ -320,7 +320,8 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # xscreensaver
 # https://www.jwz.org/xscreensaver
 #exec --no-startup-id xscreensaver --no-splash
-exec --no-startup-id xautolock -time 5 -locker ~/.config/i3/scripts/blur-lock
+# Suspend after 15 minutes without keyboard or mouse activity.
+exec --no-startup-id ~/.local/bin/xautosuspend -time 15 -locker "systemctl suspend" -detectsleep
 
 # Desktop notifications
 # dunst config used ~/.config/dunst/dunstrc
