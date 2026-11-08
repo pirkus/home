@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Merge local Qwen defaults without replacing other models or prompt templates."""
+"""Merge remote Qwen defaults without replacing other OpenCode providers."""
+import argparse
 import json
 import shutil
 from datetime import datetime
@@ -23,37 +24,15 @@ def update(path, change):
     temporary.replace(path)
 
 
-def model_defaults(data):
-    fields = data.setdefault("load", {}).setdefault("fields", [])
-    values = {
-        "llm.load.contextLength": 131072,
-        "llm.load.llama.acceleration.offloadRatio": 1,
-        "llm.load.llama.flashAttention": True,
-        "llm.load.offloadKVCacheToGpu": True,
-        "llm.load.llama.kCacheQuantizationType": {"checked": True, "value": "q8_0"},
-        "llm.load.llama.vCacheQuantizationType": {"checked": True, "value": "q8_0"},
-        "llm.load.speculativeDecoding.draftMtp": True,
-        "llm.load.speculativeDecoding.draftSimple": False,
-        "llm.load.speculativeDecoding.draftMaxTokens": 5,
-        "llm.load.numParallelSessions": 1,
-    }
-    for key, value in values.items():
-        existing = next((field for field in fields if field["key"] == key), None)
-        if existing is None:
-            fields.append({"key": key, "value": value})
-        else:
-            existing["value"] = value
-
-
-def opencode_defaults(data):
+def opencode_defaults(data, base_url):
     data.setdefault("$schema", "https://opencode.ai/config.json")
     data["model"] = "lmstudio/qwen/qwen3.8-27b"
     provider = data.setdefault("providers", {}).setdefault("lmstudio", {})
-    provider.setdefault("name", "LM Studio (local)")
+    provider["name"] = "Remote GPU server"
     provider.setdefault("package", "@opencode/ai/providers/openai-compatible")
-    provider.setdefault("settings", {})["baseURL"] = "http://127.0.0.1:1234/v1"
+    provider.setdefault("settings", {})["baseURL"] = base_url
     model = provider.setdefault("models", {}).setdefault("qwen/qwen3.8-27b", {})
-    model.update({"name": "Qwen 3.8 27B (local, 128K, MTP)", "modelID": "qwen/qwen3.8-27b"})
+    model.update({"name": "Qwen 3.8 27B (remote, 128K, MTP)", "modelID": "qwen/qwen3.8-27b"})
     model["limit"] = {"context": 131072, "output": 16384}
     model.setdefault("capabilities", {}).update({"tools": True, "input": ["text", "image"], "output": ["text"], "reasoning": {"supported": True}})
     model.setdefault("compatibility", {}).update({"reasoningField": "reasoning_content", "maxTokensField": "max_tokens"})
@@ -68,7 +47,9 @@ def opencode_defaults(data):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("base_url", help="OpenAI-compatible endpoint including /v1")
+    args = parser.parse_args()
     home = Path.home()
-    update(home / ".lmstudio/.internal/user-concrete-model-default-config/qwen/qwen3.8-27b.json", model_defaults)
     # The existing JSONC file contains plain JSON; preserve its other providers.
-    update(home / ".config/opencode/opencode.jsonc", opencode_defaults)
+    update(home / ".config/opencode/opencode.jsonc", lambda data: opencode_defaults(data, args.base_url))

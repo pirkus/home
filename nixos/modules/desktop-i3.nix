@@ -2,15 +2,6 @@
 let
   sessionsDir = "${config.services.displayManager.sessionData.desktops}/share";
   xsessionWrapper = config.services.displayManager.sessionData.wrapper;
-
-  # Hyprland 0.55 ships both a raw session and a UWSM-managed session. Expose
-  # only the UWSM entry in tuigreet so the login menu stays a clean i3 vs
-  # Hyprland choice rather than showing two nearly-identical Hyprland entries.
-  hyprlandSessions = pkgs.runCommand "tuigreet-hyprland-sessions" { } ''
-    mkdir -p "$out"
-    ln -s ${sessionsDir}/wayland-sessions/hyprland-uwsm.desktop \
-      "$out/hyprland-uwsm.desktop"
-  '';
 in
 {
   services.xserver = {
@@ -52,22 +43,20 @@ in
     useTextGreeter = true;
     settings.default_session = {
       user = "greeter";
-      # F3 opens the session menu. We expose the i3 X session and only the
-      # UWSM-managed Hyprland Wayland session. Explicitly override tuigreet's X11
-      # wrapper because its distro-generic default refers to /usr/bin/env,
+      # Override tuigreet's X11 wrapper: its default refers to /usr/bin/env,
       # which intentionally does not exist on NixOS. Keep the NixOS session
       # wrapper in the chain so profiles, Xresources and graphical-session
       # systemd targets are initialized for a selected i3 session. Tuigreet's
       # --remember-user-session and --remember-session modes are exclusive.
       command = lib.escapeShellArgs [
         "${pkgs.coreutils}/bin/env"
-        "TUIGREET_SESSIONS_DIRS=${hyprlandSessions}"
+        "TUIGREET_SESSIONS_DIRS="
         "TUIGREET_XSESSIONS_DIRS=${sessionsDir}/xsessions"
         "TUIGREET_XSESSION_WRAPPER=${pkgs.xinit}/bin/startx ${xsessionWrapper}"
         (lib.getExe pkgs.tuigreet)
         "--time"
         "--greeting"
-        "F3: choose i3 / Hyprland"
+        "Welcome — i3 desktop"
         "--remember"
         "--remember-user-session"
         "--user-menu"
@@ -94,8 +83,6 @@ in
     maim
     libnotify
   ];
-
-
   services.autorandr = {
     enable = true;
     matchEdid = true;

@@ -7,7 +7,7 @@ TARGET_ROOT="${1:-/mnt}"
 TARGET_ROOT="${TARGET_ROOT%/}"
 [[ -n "$TARGET_ROOT" ]] || TARGET_ROOT="/"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-HOST_DIR="$REPO_ROOT/nixos/hosts/arch-desktop"
+HOST_DIR="$REPO_ROOT/nixos/hosts/amd-server"
 HW_FILE="$HOST_DIR/hardware-configuration.nix"
 
 command -v nixos-generate-config >/dev/null || {
@@ -47,9 +47,7 @@ echo
 echo "Scanning attached internal IDE/SATA/NVMe data filesystems ..."
 "$REPO_ROOT/nixos/scripts/generate-storage-config.sh" "$TARGET_ROOT"
 
-# This host does not need PRIME bus IDs: the RTX 3080 is the primary desktop
-# GPU. Still show the detected display devices as a sanity check when lspci is
-# available.
+# Show the detected GPU as a sanity check; this host uses amdgpu/Mesa.
 if command -v lspci >/dev/null; then
   echo
   echo "Detected display-class PCI devices:"

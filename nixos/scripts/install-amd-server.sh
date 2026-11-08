@@ -20,15 +20,15 @@ if ! mountpoint -q "$TARGET_ROOT"; then
   exit 1
 fi
 
-./nixos/scripts/prepare-arch-desktop.sh "$TARGET_ROOT"
+./nixos/scripts/prepare-amd-server.sh "$TARGET_ROOT"
 
 echo
 echo "Building NixOS configuration..."
-nix build "$FLAKE_REF#nixosConfigurations.arch-desktop.config.system.build.toplevel"
+nix build "$FLAKE_REF#nixosConfigurations.amd-server.config.system.build.toplevel"
 
 echo
 echo "Installing NixOS..."
-sudo nixos-install --root "$TARGET_ROOT" --flake "$FLAKE_REF#arch-desktop"
+sudo nixos-install --root "$TARGET_ROOT" --flake "$FLAKE_REF#amd-server"
 
 echo
 echo "Set the login password for filken before rebooting."
@@ -37,4 +37,4 @@ sudo nixos-enter --root "$TARGET_ROOT" -c 'passwd filken'
 
 echo
 echo "Install complete. Do not reboot until passwd filken succeeded."
-echo "After first boot, enroll the YubiKey separately as documented in README-NIXOS.md."
+echo "See README.md for headless services and post-install checks."

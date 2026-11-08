@@ -14,7 +14,7 @@ TARGET_ROOT="${1:-/mnt}"
 TARGET_ROOT="${TARGET_ROOT%/}"
 [[ -n "$TARGET_ROOT" ]] || TARGET_ROOT="/"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-OUTPUT="$REPO_ROOT/nixos/hosts/arch-desktop/storage-configuration.nix"
+OUTPUT="$REPO_ROOT/nixos/hosts/amd-server/storage-configuration.nix"
 MOUNT_BASE="/mnt"
 
 for cmd in lsblk jq mountpoint; do

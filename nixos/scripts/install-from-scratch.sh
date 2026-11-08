@@ -7,7 +7,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FLAKE_REF="path:$REPO_ROOT"
-HOST_DIR="$REPO_ROOT/nixos/hosts/arch-desktop"
+HOST_DIR="$REPO_ROOT/nixos/hosts/amd-server"
 HW_FILE="$HOST_DIR/hardware-configuration.nix"
 
 die() { echo "Error: $*" >&2; exit 1; }
@@ -97,7 +97,7 @@ echo "Installing NixOS to $stable_id ..."
 sudo nix --extra-experimental-features "nix-command flakes" \
   run "$FLAKE_REF#disko-install" -- \
   --write-efi-boot-entries \
-  --flake "$FLAKE_REF#arch-desktop" \
+  --flake "$FLAKE_REF#amd-server" \
   --disk main "$stable_id"
 
 root_partition="$(
@@ -107,7 +107,7 @@ root_partition="$(
 )"
 [[ -n "$root_partition" ]] || die "Could not find the installed Btrfs filesystem on $canonical_disk."
 
-installed_root="/mnt/arch-desktop-installed"
+installed_root="/mnt/amd-server-installed"
 cleanup_installed_root() {
   for mount_path in "$installed_root/home" "$installed_root/nix" "$installed_root"; do
     if mountpoint -q "$mount_path"; then

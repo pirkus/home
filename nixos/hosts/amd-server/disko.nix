@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  # The installer supplies the actual disk with:
+  # The amd-server installer supplies the actual disk with:
   #   --disk main /dev/disk/by-id/...
   # Keeping this harmless default prevents an accidental evaluation from
   # encoding a host-specific /dev/sdX or /dev/nvmeXnY name in the repository.

@@ -1,5 +1,5 @@
 {
-  description = "Filip's NixOS workstation, migrated from pirkus/home arch-desktop";
+  description = "Filip's AMD NixOS server with an optional i3 desktop";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -13,14 +13,9 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    lmstudio = {
-      url = "github:Daaboulex/lmstudio-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, home-manager, disko, lmstudio, ... }:
+  outputs = { self, nixpkgs, home-manager, disko, ... }:
     let
       system = "x86_64-linux";
       mkHost = hostModule: nixpkgs.lib.nixosSystem {
@@ -28,27 +23,22 @@
         specialArgs = { inherit self; };
         modules = [
           disko.nixosModules.disko
-          { nixpkgs.overlays = [ lmstudio.overlays.default ]; }
           hostModule
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
-            home-manager.sharedModules = [ lmstudio.homeModules.default ];
             home-manager.users.filken = import ./nixos/home/filken.nix;
           }
         ];
       };
     in {
-      nixosConfigurations.arch-desktop =
-        mkHost ./nixos/hosts/arch-desktop/configuration.nix;
+      nixosConfigurations.amd-server =
+        mkHost ./nixos/hosts/amd-server/configuration.nix;
 
       packages.${system} = {
         disko-install = disko.packages.${system}.disko-install;
-        gpu-unlock =
-          self.nixosConfigurations.arch-desktop.config.boot.kernelPackages.callPackage
-            ./nixos/packages/gpu-unlock.nix { };
       };
     };
 }

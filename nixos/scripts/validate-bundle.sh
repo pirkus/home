@@ -12,26 +12,32 @@ required=(
   nixos/home/dotfiles/.emacs.d/init.el
   nixos/home/dotfiles/.Xresources
   nixos/home/dotfiles/.Xmodmap
-  nixos/home/dotfiles/.config/hypr/hyprland.lua
-  nixos/hosts/arch-desktop/configuration.nix
-  nixos/hosts/arch-desktop/disko.nix
-  nixos/hosts/arch-desktop/hardware-configuration.nix
-  nixos/hosts/arch-desktop/storage-configuration.nix
+  nixos/profiles/server.nix
+  nixos/modules/opencode.nix
+  nixos/modules/local-chat.nix
+  nixos/modules/wireguard-server.nix
+  nixos/hosts/amd-server/configuration.nix
+  nixos/hosts/amd-server/disko.nix
+  nixos/hosts/amd-server/hardware-configuration.nix
+  nixos/hosts/amd-server/storage-configuration.nix
+  nixos/hosts/amd-server/wireguard-peers.nix
   nixos/scripts/generate-storage-config.sh
-  nixos/scripts/prepare-arch-desktop.sh
-  nixos/scripts/install-arch-desktop.sh
+  nixos/scripts/prepare-amd-server.sh
+  nixos/scripts/install-amd-server.sh
   nixos/scripts/install-from-scratch.sh
 )
 for f in "${required[@]}"; do
   [[ -e "$f" ]] || { echo "missing: $f" >&2; exit 1; }
 done
-bash -n nixos/scripts/*.sh
+for f in nixos/scripts/*.sh; do
+  bash -n "$f"
+done
 
-grep -Fq 'FLAKE_REF="path:$REPO_ROOT"' nixos/scripts/install-arch-desktop.sh || {
+grep -Fq 'FLAKE_REF="path:$REPO_ROOT"' nixos/scripts/install-amd-server.sh || {
   echo "install script must use an explicit path: flake reference" >&2
   exit 1
 }
-grep -Fq 'nixos-install --root "$TARGET_ROOT"' nixos/scripts/install-arch-desktop.sh || {
+grep -Fq 'nixos-install --root "$TARGET_ROOT"' nixos/scripts/install-amd-server.sh || {
   echo "install script must pass TARGET_ROOT to nixos-install" >&2
   exit 1
 }
@@ -55,7 +61,7 @@ grep -Fq '"$installed_root/home/filken/nixos-config"' nixos/scripts/install-from
   echo "fresh installer must preserve the generated configuration" >&2
   exit 1
 }
-for f in nixos/scripts/prepare-arch-desktop.sh nixos/scripts/generate-storage-config.sh; do
+for f in nixos/scripts/prepare-amd-server.sh nixos/scripts/generate-storage-config.sh; do
   grep -Fq '[[ "$TARGET_ROOT" == "/" ]]' "$f" || {
     echo "$f must reject the live root filesystem" >&2
     exit 1

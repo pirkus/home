@@ -31,7 +31,6 @@ let
       "/usr/bin/thunar"
       "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
       "/usr/share/endeavouros/backgrounds/endeavouros-wallpaper.png"
-      "exec xrandr --output DP-4 --mode 3440x1440 -r 144.00"
       "exec --no-startup-id udiskie --no-automount --tray"
     ]
     [
@@ -39,8 +38,7 @@ let
       "thunar"
       "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
       "${fallbackWallpaper}"
-      "# display mode is handled by ~/.screenlayout/monitor.sh + autorandr"
-      "# udiskie is managed once by Home Manager for both i3 and Hyprland"
+      "# udiskie is managed by Home Manager"
     ]
     originalI3;
 
@@ -56,18 +54,6 @@ let
     fi
     patchShebangs "$out"
   '';
-
-  hyprClipboard = pkgs.writeShellScriptBin "hypr-clipboard" ''
-    set -eu
-    selection="$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.rofi}/bin/rofi -dmenu -i -p Clipboard -config "$HOME/.config/rofi/rofidmenu.rasi" || true)"
-    [ -n "$selection" ] || exit 0
-    printf '%s\n' "$selection" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
-  '';
-
-  steamPlain = pkgs.writeShellScriptBin "steam-plain" ''
-    exec ${pkgs.steam}/bin/steam "$@"
-  '';
-
 in
 {
   imports = [ ./local-ai.nix ];
@@ -84,7 +70,7 @@ in
       mc
       pinta
 
-      # i3 and Hyprland only need GTK; skip Arc's broken GNOME Shell assets.
+      # i3 only needs GTK; skip Arc's broken GNOME Shell assets.
       (arc-theme.overrideAttrs (old: {
         mesonFlags = builtins.filter
           (flag: !(lib.hasPrefix "-Dthemes=" flag))
@@ -109,26 +95,10 @@ in
       networkmanager
       zenity
       haskellPackages.greenclip
-
-      # Wayland / Hyprland user-side helpers.
-      hyprClipboard
-      steamPlain
     ];
   };
 
   programs.home-manager.enable = true;
-
-  programs.lmstudio = {
-    home = "/home/filken/.lmstudio";
-    server = {
-      enable = true;
-      autostart = true;
-      port = 1234;
-    };
-  };
-
-  # default.target pulls this service in; ordering after it creates a cycle.
-  systemd.user.services.lmstudio.Unit.After = lib.mkForce [ ];
 
   services.udiskie = {
     enable = true;
@@ -154,17 +124,6 @@ in
   programs.starship = {
     enable = true;
     settings = builtins.fromTOML (builtins.readFile (dotfile ".config/starship.toml"));
-  };
-
-  # A user desktop entry shadows Steam's stock entry and launches it unwrapped.
-  xdg.desktopEntries.steam = {
-    name = "Steam";
-    genericName = "Video game digital distribution platform";
-    exec = "${steamPlain}/bin/steam-plain %U";
-    icon = "steam";
-    terminal = false;
-    categories = [ "Network" "FileTransfer" "Game" ];
-    mimeType = [ "x-scheme-handler/steam" ];
   };
 
   home.file.".emacs.d/init.el".source = dotfile ".emacs.d/init.el";
@@ -203,8 +162,6 @@ in
       #!${pkgs.bash}/bin/bash
       set -u
 
-      target_mode="3440x1440"
-      target_rate="144"
       xrandr_bin="${pkgs.xrandr}/bin/xrandr"
       autorandr_bin="${pkgs.autorandr}/bin/autorandr"
 
@@ -213,161 +170,18 @@ in
         exit 0
       fi
 
-      output="$($xrandr_bin --query | ${pkgs.gawk}/bin/awk -v mode="$target_mode" '
-        /^[^[:space:]]+ connected/    { out=$1; connected=1; next }
-        /^[^[:space:]]+ disconnected/ { connected=0; next }
-        connected && $1 == mode       { print out; exit }
-      ')"
-
-      if [[ -z "$output" ]]; then
-        output="$($xrandr_bin --query | ${pkgs.gawk}/bin/awk '/^[^[:space:]]+ connected/ { print $1; exit }')"
-      fi
-
+      output="$($xrandr_bin --query | ${pkgs.gawk}/bin/awk '/^[^[:space:]]+ connected/ { print $1; exit }')"
       [[ -n "$output" ]] || exit 0
-
-      if ! $xrandr_bin --output "$output" --mode "$target_mode" --rate "$target_rate" --primary; then
-        if ! $xrandr_bin --output "$output" --mode "$target_mode" --primary; then
-          $xrandr_bin --output "$output" --auto --primary || true
-        fi
-      fi
+      $xrandr_bin --output "$output" --auto --primary
 
       fingerprint="$($autorandr_bin --fingerprint 2>/dev/null || true)"
       if [[ -n "$fingerprint" ]]; then
         profile_hash="$(printf '%s' "$fingerprint" | ${pkgs.coreutils}/bin/sha256sum | ${pkgs.coreutils}/bin/cut -c1-12)"
-        profile="arch-desktop-$profile_hash"
+        profile="amd-server-$profile_hash"
         if [[ ! -d "$HOME/.config/autorandr/$profile" ]]; then
           $autorandr_bin --save "$profile" >/dev/null 2>&1 || true
         fi
       fi
     '';
   };
-
-  # Keep the Hyprland config as a normal repo file, parallel to the existing
-  # .config/i3/config. NixOS owns the compositor/session package; Home Manager
-  # just links the user-editable Lua config into ~/.config/hypr.
-  xdg.configFile."hypr/hyprland.lua".source = dotfile ".config/hypr/hyprland.lua";
-
-  # Waybar deliberately mirrors the old i3bar: bottom position, numeric
-  # workspaces, dark palette, and the same basic CPU/memory/network/audio/clock
-  # information. It only runs from the Hyprland start hook.
-  xdg.configFile."waybar/config.jsonc".text = builtins.toJSON {
-    layer = "top";
-    position = "bottom";
-    height = 28;
-    spacing = 4;
-    modules-left = [ "hyprland/workspaces" "hyprland/window" ];
-    modules-right = [ "pulseaudio" "cpu" "memory" "network" "tray" "clock" ];
-
-    "hyprland/workspaces" = {
-      format = "{name}";
-      # `hyprctl dispatch` takes a native dispatcher and cannot evaluate Lua.
-      on-scroll-up = "hyprctl dispatch workspace e+1";
-      on-scroll-down = "hyprctl dispatch workspace e-1";
-    };
-    "hyprland/window" = {
-      max-length = 80;
-      separate-outputs = true;
-    };
-    pulseaudio = {
-      format = "  {volume}%";
-      format-muted = "󰝟 muted";
-      on-click = "pavucontrol";
-    };
-    cpu.format = "  {usage}%";
-    memory.format = "  {}%";
-    network = {
-      format-wifi = "  {essid}";
-      format-ethernet = "󰈀  {ipaddr}";
-      format-disconnected = "󰖪";
-      tooltip-format = "{ifname}: {ipaddr}/{cidr}";
-    };
-    tray.spacing = 8;
-    clock = {
-      format = "{:%a %Y-%m-%d  %H:%M}";
-      tooltip-format = "<tt>{calendar}</tt>";
-    };
-  };
-
-  xdg.configFile."waybar/style.css".text = ''
-    * {
-      font-family: "Noto Sans", "Symbols Nerd Font";
-      font-size: 14px;
-      min-height: 0;
-    }
-
-    window#waybar {
-      background: #383c4a;
-      color: #ffffff;
-      border: none;
-    }
-
-    #workspaces button {
-      padding: 0 8px;
-      color: #b0b5bd;
-      background: #08052b;
-      border: 0;
-      border-radius: 0;
-    }
-
-    #workspaces button.active {
-      color: #ffffff;
-      background: #5294e2;
-    }
-
-    #workspaces button.urgent {
-      color: #ffffff;
-      background: #e53935;
-    }
-
-    #window,
-    #pulseaudio,
-    #cpu,
-    #memory,
-    #network,
-    #tray,
-    #clock {
-      padding: 0 9px;
-      color: #ffffff;
-    }
-
-    #clock {
-      color: #e345ff;
-    }
-  '';
-
-  xdg.configFile."mako/config".text = ''
-    font=Noto Sans 12
-    background-color=#383c4aff
-    text-color=#ffffffff
-    border-color=#5294e2ff
-    border-size=2
-    border-radius=0
-    default-timeout=5000
-  '';
-
-  xdg.configFile."hypr/hyprlock.conf".text = ''
-    general {
-      disable_loading_bar = true
-      hide_cursor = true
-    }
-
-    background {
-      monitor =
-      color = rgb(08052b)
-    }
-
-    input-field {
-      monitor =
-      size = 360, 52
-      outline_thickness = 2
-      outer_color = rgb(5294e2)
-      inner_color = rgb(383c4a)
-      font_color = rgb(ffffff)
-      fade_on_empty = false
-      placeholder_text = <i>Password...</i>
-      position = 0, -40
-      halign = center
-      valign = center
-    }
-  '';
 }

@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
@@ -17,10 +17,6 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
   # Enable NTFS mounting (including Thunar/UDisks removable-drive mounts).
   boot.supportedFilesystems = [ "ntfs" ];
-
-  # The Arch README used this as an NVMe stability workaround.  Deliberately
-  # not carrying over "nomodeset" because that would fight the NVIDIA setup.
-  boot.kernelParams = [ "nvme_core.default_ps_max_latency_us=0" ];
 
   networking.networkmanager.enable = true;
 
@@ -109,10 +105,5 @@
     lm_sensors
     pciutils
     usbutils
-
-    # Stable LM Studio, provided by the lmstudio-nix overlay.
-    lmstudio
-    # Prefer the headless CLI over the desktop package's duplicate lms binary.
-    (lib.hiPrio lmstudio-server)
   ];
 }
