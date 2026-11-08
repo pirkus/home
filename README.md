@@ -68,16 +68,29 @@ Hardware is regenerated on the target computer before installation. The final
 configuration is copied to `/home/filken/nixos-config` in the installed system,
 and the installer prompts for the `filken` password before rebooting.
 
+The fresh installer partitions and mounts the disk at `/mnt` before building
+the system. Packages (including Qwen Code), build scratch space, and evaluation
+caches use the target disk, avoiding the live installer's 16 GiB RAM drive.
+Only the partitioning tools are built in the live environment.
+
 For an already partitioned installation mounted at `/mnt`, use:
 
 ```sh
 bash nixos/scripts/install-amd-server.sh /mnt
 ```
 
+Use this same command to resume a failed installation while the target remains
+mounted. It preserves the partitions and reuses packages already in the target
+store. If the live RAM drive is already full, reboot the installer first and
+remount the target filesystems (including `/mnt/nix` and `/mnt/boot`). Running
+`install-from-scratch.sh` again erases the selected disk.
+
 The checked-in Disko device is deliberately a placeholder. The fresh installer
 supplies the selected disk's stable `/dev/disk/by-id/…` path; do not install this
 configuration directly without selecting the target disk or generating the
 mounted target's hardware configuration through the preparation script.
+That generated configuration uses the mounted filesystems' UUIDs and disables
+Disko's mount declarations to avoid conflicting device definitions.
 
 After installation, rebuild from the saved repository:
 

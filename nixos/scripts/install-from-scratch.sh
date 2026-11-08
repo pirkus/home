@@ -17,7 +17,7 @@ require() { command -v "$1" >/dev/null || die "Required command not found: $1"; 
 [[ $EUID -ne 0 ]] || die "Run this as the installer user, not as root; it uses sudo only for the destructive installation step."
 [[ -d /sys/firmware/efi ]] || die "Boot the NixOS installer in UEFI mode before installing this UEFI layout."
 
-for command in jq lsblk findmnt readlink nixos-generate-config nix; do
+for command in jq lsblk findmnt readlink nixos-generate-config nix nixos-install nixos-enter; do
   require "$command"
 done
 
@@ -93,35 +93,22 @@ echo
 echo "Generating hardware configuration from the installer (without filesystem declarations) ..."
 nixos-generate-config --show-hardware-config --no-filesystems > "$HW_FILE"
 
-echo "Installing NixOS to $stable_id ..."
-sudo nix --extra-experimental-features "nix-command flakes" \
-  run "$FLAKE_REF#disko-install" -- \
-  --write-efi-boot-entries \
-  --flake "$FLAKE_REF#amd-server" \
-  --disk main "$stable_id"
+# disko-install builds the entire system before formatting, which can exhaust
+# the live ISO's RAM-backed store. Build only Disko's tools here, then let
+# nixos-install build the full system directly on the mounted target disk.
+echo "Building partitioning tools for $stable_id ..."
+disko_script="$(nix --extra-experimental-features "nix-command flakes" build \
+  --impure --no-link --print-out-paths \
+  --file "$REPO_ROOT/nixos/scripts/format-amd-server.nix" \
+  --argstr flakeRef "$FLAKE_REF" --argstr diskDevice "$stable_id")"
+echo "Partitioning and mounting $stable_id at /mnt ..."
+sudo "$disko_script/bin/disko-destroy-format-mount" --yes-wipe-all-disks
 
-root_partition="$(
-  lsblk --json --output PATH,FSTYPE,LABEL "$canonical_disk" |
-    jq -r '.blockdevices[] | recurse(.children[]?) | select(.fstype == "btrfs" and .label == "nixos") | .path' |
-    head -n1
-)"
-[[ -n "$root_partition" ]] || die "Could not find the installed Btrfs filesystem on $canonical_disk."
+echo "The disk is ready. If installation fails, resume without erasing it with:"
+echo "  bash nixos/scripts/install-amd-server.sh /mnt"
+bash "$REPO_ROOT/nixos/scripts/install-amd-server.sh" /mnt
 
-installed_root="/mnt/amd-server-installed"
-cleanup_installed_root() {
-  for mount_path in "$installed_root/home" "$installed_root/nix" "$installed_root"; do
-    if mountpoint -q "$mount_path"; then
-      sudo umount "$mount_path"
-    fi
-  done
-}
-trap cleanup_installed_root EXIT
-
-sudo install -d -m 0755 "$installed_root"
-sudo mount -t btrfs -o subvol=@root "$root_partition" "$installed_root"
-sudo install -d -m 0755 "$installed_root/home" "$installed_root/nix"
-sudo mount -t btrfs -o subvol=@home "$root_partition" "$installed_root/home"
-sudo mount -t btrfs -o subvol=@nix "$root_partition" "$installed_root/nix"
+installed_root="/mnt"
 
 echo
 echo "Copying the generated system configuration into the installed system ..."
@@ -130,10 +117,4 @@ sudo cp -a "$REPO_ROOT/." "$installed_root/home/filken/nixos-config/"
 sudo nixos-enter --root "$installed_root" -c \
   'chown -R filken:users /home/filken/nixos-config'
 
-echo
-echo "Set the login password for filken before rebooting."
-sudo nixos-enter --root "$installed_root" -c 'passwd filken'
-cleanup_installed_root
-trap - EXIT
-sudo rmdir "$installed_root"
 echo "Installation complete. Reboot only after the password command succeeds."

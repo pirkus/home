@@ -33,7 +33,12 @@ fi
 
 echo "Generating hardware configuration from $TARGET_ROOT ..."
 sudo nixos-generate-config --root "$TARGET_ROOT"
-cp "$TARGET_ROOT/etc/nixos/hardware-configuration.nix" "$HW_FILE"
+# Generated UUID-based mounts describe the actual target, including resumed or
+# manually partitioned installs. Disable Disko's generated mounts so the two
+# sets of filesystem declarations do not conflict; its formatting tools remain
+# available for the fresh installer.
+sed '$i\  disko.enableConfig = false;' \
+  "$TARGET_ROOT/etc/nixos/hardware-configuration.nix" > "$HW_FILE"
 
 if ! grep -Eq 'fileSystems\."/"|fileSystems = .*"/"' "$HW_FILE"; then
   echo "Generated hardware configuration does not define the target root filesystem (/)." >&2

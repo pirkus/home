@@ -25,6 +25,7 @@ required=(
   nixos/scripts/prepare-amd-server.sh
   nixos/scripts/install-amd-server.sh
   nixos/scripts/install-from-scratch.sh
+  nixos/scripts/format-amd-server.nix
 )
 for f in "${required[@]}"; do
   [[ -e "$f" ]] || { echo "missing: $f" >&2; exit 1; }
@@ -41,7 +42,7 @@ grep -Fq 'nixos-install --root "$TARGET_ROOT"' nixos/scripts/install-amd-server.
   echo "install script must pass TARGET_ROOT to nixos-install" >&2
   exit 1
 }
-grep -Fq -- '--disk main "$stable_id"' nixos/scripts/install-from-scratch.sh || {
+grep -Fq -- '--argstr diskDevice "$stable_id"' nixos/scripts/install-from-scratch.sh || {
   echo "fresh installer must pass its selected stable disk ID to Disko" >&2
   exit 1
 }
@@ -53,8 +54,16 @@ grep -Fq 'ERASE $(basename "$stable_id")' nixos/scripts/install-from-scratch.sh 
   echo "fresh installer must require destructive confirmation" >&2
   exit 1
 }
-grep -Fq 'subvol=@root' nixos/scripts/install-from-scratch.sh || {
-  echo "fresh installer must remount the installed root after disko-install" >&2
+grep -Fq 'bash "$REPO_ROOT/nixos/scripts/install-amd-server.sh" /mnt' nixos/scripts/install-from-scratch.sh || {
+  echo "fresh installer must install into the mounted target using the shared installer" >&2
+  exit 1
+}
+if grep -Eq '^[[:space:]]*nix build|run .*#disko-install' nixos/scripts/install-{amd-server,from-scratch}.sh; then
+  echo "installers must not build the full system in the live store" >&2
+  exit 1
+fi
+grep -Fq -- '--option build-dir "$INSTALL_TMPDIR"' nixos/scripts/install-amd-server.sh || {
+  echo "installer must put build scratch space on the target disk" >&2
   exit 1
 }
 grep -Fq '"$installed_root/home/filken/nixos-config"' nixos/scripts/install-from-scratch.sh || {
