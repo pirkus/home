@@ -321,7 +321,8 @@ exec --no-startup-id xset s 480 dpms 600 600 600
 # https://www.jwz.org/xscreensaver
 #exec --no-startup-id xscreensaver --no-splash
 # Suspend after 15 minutes without keyboard or mouse activity.
-exec --no-startup-id ~/.local/bin/xautosuspend -time 15 -locker "systemctl suspend" -detectsleep
+# Temporarily paused until the NVIDIA suspend configuration passes a manual test.
+#exec --no-startup-id ~/.local/bin/xautosuspend -time 15 -locker "systemctl suspend" -detectsleep
 
 # Desktop notifications
 # dunst config used ~/.config/dunst/dunstrc

@@ -9,7 +9,7 @@ let
     exec ${pkgs.lmstudio-server}/bin/lms load qwen/qwen3.8-27b --context-length 131072 --parallel 1 --gpu max --speculative-draft-mtp --speculative-draft-max-tokens 5 --identifier qwen/qwen3.8-27b --yes
   '';
 in {
-  # Merge with existing LM Studio prompt templates and OpenCode providers.
+  # Merge Qwen defaults with existing LM Studio configuration.
   home.activation.configureLocalAi = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${pkgs.python3}/bin/python3 ${../scripts/configure-local-ai.py}
   '';
@@ -33,25 +33,4 @@ in {
     Install.WantedBy = [ "default.target" ];
   };
 
-  systemd.user.services.opencode-web = {
-    Unit.Description = "OpenCode shared server and web UI";
-    Service = {
-      Type = "simple";
-      ExecStart = "${pkgs.opencode}/bin/opencode serve --service --hostname 0.0.0.0 --port 49374";
-      WorkingDirectory = "%h/home";
-      Environment = "PATH=%h/.nix-profile/bin:/etc/profiles/per-user/%u/bin:/run/current-system/sw/bin";
-      Restart = "on-failure";
-      RestartSec = 5;
-    };
-    Install.WantedBy = [ "default.target" ];
-  };
-
-  xdg.desktopEntries.local-chat = {
-    name = "Local Chat";
-    comment = "Chat with Qwen in Open WebUI";
-    exec = "${pkgs.xdg-utils}/bin/xdg-open http://localhost:3000";
-    icon = "internet-web-browser";
-    terminal = false;
-    categories = [ "Network" ];
-  };
 }

@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-UNITS = ("lmstudio.service", "qwen-model.service", "ralph-orchestrator-worker.service")
+UNITS = ("lmstudio.service", "qwen-model.service")
 
 
 def systemctl(*args):

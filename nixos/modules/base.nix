@@ -65,7 +65,6 @@
   environment.systemPackages = with pkgs; [
     codex
     claude-code
-    opencode
     qwen-code
     git
     curl

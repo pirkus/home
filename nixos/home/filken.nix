@@ -72,7 +72,7 @@ let
 
 in
 {
-  imports = [ ./local-ai.nix ./ralph-orchestrator.nix ./ai-gaming.nix ];
+  imports = [ ./local-ai.nix ./ai-gaming.nix ];
 
   home = {
     username = "filken";

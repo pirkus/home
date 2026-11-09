@@ -45,30 +45,6 @@ def model_defaults(data):
             existing["value"] = value
 
 
-def opencode_defaults(data):
-    data.setdefault("$schema", "https://opencode.ai/config.json")
-    data["model"] = "lmstudio/qwen/qwen3.8-27b"
-    provider = data.setdefault("providers", {}).setdefault("lmstudio", {})
-    provider.setdefault("name", "LM Studio (local)")
-    provider.setdefault("package", "@opencode/ai/providers/openai-compatible")
-    provider.setdefault("settings", {})["baseURL"] = "http://127.0.0.1:1234/v1"
-    model = provider.setdefault("models", {}).setdefault("qwen/qwen3.8-27b", {})
-    model.update({"name": "Qwen 3.8 27B (local, 128K, MTP)", "modelID": "qwen/qwen3.8-27b"})
-    model["limit"] = {"context": 131072, "output": 16384}
-    model.setdefault("capabilities", {}).update({"tools": True, "input": ["text", "image"], "output": ["text"], "reasoning": {"supported": True}})
-    model.setdefault("compatibility", {}).update({"reasoningField": "reasoning_content", "maxTokensField": "max_tokens"})
-    model.setdefault("body", {})["reasoning_effort"] = "low"
-    variants = model.setdefault("variants", [])
-    for effort in ("low", "medium", "xhigh"):
-        variant = next((item for item in variants if item["id"] == effort), None)
-        if variant is None:
-            variant = {"id": effort}
-            variants.append(variant)
-        variant.setdefault("body", {})["reasoning_effort"] = effort
-
-
 if __name__ == "__main__":
     home = Path.home()
     update(home / ".lmstudio/.internal/user-concrete-model-default-config/qwen/qwen3.8-27b.json", model_defaults)
-    # The existing JSONC file contains plain JSON; preserve its other providers.
-    update(home / ".config/opencode/opencode.jsonc", opencode_defaults)
